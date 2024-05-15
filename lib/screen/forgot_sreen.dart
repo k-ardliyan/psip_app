@@ -80,7 +80,7 @@ class _ForgotPassworScreenState extends State<ForgotPassworScreen> {
                 autovalidateMode: AutovalidateMode.onUserInteraction,
                 validator: (email) =>
                     email != null && !EmailValidator.validate(email)
-                        ? 'Masukkan email yang valid'
+                        ? 'Masukkan email yang valid!'
                         : null,
               ),
               const SizedBox(
