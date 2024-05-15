@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "966775592131",
+    "project_id": "psip-app-87783",
+    "storage_bucket": "psip-app-87783.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:966775592131:android:af3d3935ce31b69808fe76",
+        "android_client_info": {
+          "package_name": "com.example.psip_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBlMSVR6fm-5lHhcLW15iql8XNNMjWcKO4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
