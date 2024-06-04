@@ -3,8 +3,8 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:psip_app/bottom_bar.dart';
 import 'package:psip_app/model/utils.dart';
-import 'package:psip_app/screen/home_screen.dart';
 
 class VerifyScreen extends StatefulWidget {
   const VerifyScreen({super.key});
@@ -76,7 +76,7 @@ class _VerifyScreenState extends State<VerifyScreen> {
   @override
   Widget build(BuildContext context) {
     return isEmailVerified
-        ? const HomeScreen()
+        ? const BottomNavBar()
         : Scaffold(
             appBar: AppBar(
               iconTheme: const IconThemeData(color: Colors.white),

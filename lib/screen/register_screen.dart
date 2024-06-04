@@ -247,71 +247,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     filled: true,
                   ),
                 ),
-                if (!isNext) ...{
-                  const SizedBox(
-                    height: 8,
-                  ),
-                  TextFormField(
-                    keyboardType: TextInputType.number,
-                    textInputAction: TextInputAction.done,
-                    decoration: const InputDecoration(
-                      floatingLabelBehavior: FloatingLabelBehavior.never,
-                      labelText: 'Nomor telepon',
-                      hintText: 'Masukkan nomor telepon anda',
-                      prefixIcon: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          SizedBox(
-                            width: 12,
-                          ),
-                          Icon(Icons.phone),
-                          SizedBox(
-                            width: 12.5,
-                          ),
-                          Text(
-                            '(+62) ',
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ],
-                      ),
-                      contentPadding:
-                          EdgeInsets.symmetric(vertical: 15, horizontal: 15),
-                      border: OutlineInputBorder(),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: Colors.blueAccent,
-                          width: 2,
-                        ),
-                      ),
-                      filled: true,
-                    ),
-                  ),
-                  const SizedBox(
-                    height: 8,
-                  ),
-                  TextFormField(
-                    keyboardType: TextInputType.streetAddress,
-                    textInputAction: TextInputAction.go,
-                    decoration: const InputDecoration(
-                      floatingLabelBehavior: FloatingLabelBehavior.never,
-                      labelText: 'Alamat',
-                      hintText: 'Masukkan alamat anda',
-                      contentPadding:
-                          EdgeInsets.symmetric(vertical: 15, horizontal: 15),
-                      prefixIcon: Icon(Icons.location_on),
-                      border: OutlineInputBorder(),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: Colors.blueAccent,
-                          width: 2,
-                        ),
-                      ),
-                      filled: true,
-                    ),
-                  ),
-                },
                 const SizedBox(
-                  height: 20,
+                  height: 25,
                 ),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
@@ -334,54 +271,26 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                   ),
                 ),
-                SizedBox(
-                  height: 45,
-                  child: divider,
-                ),
-                ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    shape: const StadiumBorder(),
-                    fixedSize: Size(
-                      MediaQuery.of(context).size.width,
-                      45,
-                    ),
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  ),
-                  onPressed: () {},
-                  icon: SizedBox(
-                    height: MediaQuery.of(context).size.width / 9.5,
-                    child: Image.asset(
-                      'assets/icons/google.png',
-                      repeat: ImageRepeat.noRepeat,
-                    ),
-                  ),
-                  label: Text(
-                    "Daftar dengan google",
-                    style: GoogleFonts.poppins(
-                      color: Colors.black,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
                 const SizedBox(
                   height: 20,
                 ),
                 RichText(
                   text: TextSpan(
-                      text: 'Sudah memiliki akun? ',
-                      style: const TextStyle(color: Colors.white),
-                      children: [
-                        TextSpan(
-                          recognizer: TapGestureRecognizer()
-                            ..onTap = widget.onClickedSignIn,
-                          text: 'Masuk',
-                          style: const TextStyle(
-                            color: Colors.lightBlue,
-                            decoration: TextDecoration.underline,
-                            fontWeight: FontWeight.bold,
-                          ),
+                    text: 'Sudah memiliki akun? ',
+                    style: const TextStyle(color: Colors.white),
+                    children: [
+                      TextSpan(
+                        recognizer: TapGestureRecognizer()
+                          ..onTap = widget.onClickedSignIn,
+                        text: 'Masuk',
+                        style: const TextStyle(
+                          color: Colors.lightBlue,
+                          decoration: TextDecoration.underline,
+                          fontWeight: FontWeight.bold,
                         ),
-                      ]),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),

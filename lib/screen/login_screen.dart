@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import 'package:psip_app/main.dart';
 import 'package:psip_app/model/utils.dart';
 import 'package:psip_app/screen/forgot_sreen.dart';
@@ -156,52 +157,50 @@ class _LoginScreenState extends State<LoginScreen> {
                   filled: true,
                 ),
               ),
-              if (isNext) ...{
-                const SizedBox(height: 15),
-                TextFormField(
-                  controller: passwordController,
-                  obscureText: isVisible,
-                  keyboardType: TextInputType.visiblePassword,
-                  textInputAction: TextInputAction.go,
-                  decoration: InputDecoration(
-                    floatingLabelBehavior: FloatingLabelBehavior.never,
-                    labelText: 'Kata sandi',
-                    hintText: 'Masukkan kata sandi anda',
-                    prefixIcon: const Icon(Icons.vpn_key),
-                    contentPadding: const EdgeInsets.symmetric(vertical: 16),
-                    suffixIcon: IconButton(
-                      onPressed: () {
-                        toggleVisible();
-                      },
-                      icon: Icon(
-                          isVisible ? Icons.visibility_off : Icons.visibility),
-                    ),
-                    border: const OutlineInputBorder(),
-                    filled: true,
-                  ),
-                ),
-                Container(
-                  alignment: Alignment.centerRight,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 5,
-                  ),
-                  child: GestureDetector(
-                    child: const Text(
-                      "Lupa kata sandi?",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.lightBlue,
-                      ),
-                    ),
-                    onTap: () {
-                      Navigator.of(context)
-                          .push(MaterialPageRoute(builder: (context) {
-                        return const ForgotPassworScreen();
-                      }));
+              const SizedBox(height: 15),
+              TextFormField(
+                controller: passwordController,
+                obscureText: isVisible,
+                keyboardType: TextInputType.visiblePassword,
+                textInputAction: TextInputAction.go,
+                decoration: InputDecoration(
+                  floatingLabelBehavior: FloatingLabelBehavior.never,
+                  labelText: 'Kata sandi',
+                  hintText: 'Masukkan kata sandi anda',
+                  prefixIcon: const Icon(Icons.vpn_key),
+                  contentPadding: const EdgeInsets.symmetric(vertical: 16),
+                  suffixIcon: IconButton(
+                    onPressed: () {
+                      toggleVisible();
                     },
+                    icon: Icon(
+                        isVisible ? Icons.visibility_off : Icons.visibility),
                   ),
+                  border: const OutlineInputBorder(),
+                  filled: true,
                 ),
-              },
+              ),
+              Container(
+                alignment: Alignment.centerRight,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 5,
+                ),
+                child: GestureDetector(
+                  child: const Text(
+                    "Lupa kata sandi?",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.lightBlue,
+                    ),
+                  ),
+                  onTap: () {
+                    Navigator.of(context)
+                        .push(MaterialPageRoute(builder: (context) {
+                      return const ForgotPassworScreen();
+                    }));
+                  },
+                ),
+              ),
               const SizedBox(height: 20.0),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
@@ -222,37 +221,39 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
               ),
-              if (isNext) ...{
-                SizedBox(
-                  height: 45,
-                  child: divider,
+              SizedBox(
+                height: 45,
+                child: divider,
+              ),
+              ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  shape: const StadiumBorder(),
+                  fixedSize: Size(
+                    MediaQuery.of(context).size.width,
+                    45,
+                  ),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
-                ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    shape: const StadiumBorder(),
-                    fixedSize: Size(
-                      MediaQuery.of(context).size.width,
-                      45,
-                    ),
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  ),
-                  onPressed: () {},
-                  icon: SizedBox(
-                    height: MediaQuery.of(context).size.width / 9.5,
-                    child: Image.asset(
-                      'assets/icons/google.png',
-                      repeat: ImageRepeat.noRepeat,
-                    ),
-                  ),
-                  label: Text(
-                    "Masuk dengan google",
-                    style: GoogleFonts.poppins(
-                      color: Colors.black,
-                      fontWeight: FontWeight.bold,
-                    ),
+                onPressed: () {
+                  final provider =
+                      Provider.of<GoogleSignInProvider>(context, listen: false);
+                  provider.googleLogin();
+                },
+                icon: SizedBox(
+                  height: MediaQuery.of(context).size.width / 9.5,
+                  child: Image.asset(
+                    'assets/icons/google.png',
+                    repeat: ImageRepeat.noRepeat,
                   ),
                 ),
-              },
+                label: Text(
+                  "Masuk dengan google",
+                  style: GoogleFonts.poppins(
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
               const SizedBox(
                 height: 20,
               ),
