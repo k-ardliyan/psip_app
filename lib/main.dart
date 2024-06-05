@@ -32,6 +32,7 @@ class MyApp extends StatelessWidget {
         title: 'PSIP APP',
         theme: ThemeData(
           textTheme: GoogleFonts.interTextTheme(),
+          visualDensity: VisualDensity.adaptivePlatformDensity,
         ),
         navigatorKey: navigatorKey,
         debugShowCheckedModeBanner: false,

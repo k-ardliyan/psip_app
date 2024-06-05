@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -15,10 +16,52 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        centerTitle: false,
+        title: Padding(
+          padding: const EdgeInsets.only(top: 20),
+          child: RichText(
+            text: TextSpan(
+              children: [
+                const TextSpan(
+                  text: 'Selamat datang,\n',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
+                    color: Colors.black,
+                  ),
+                ),
+                TextSpan(
+                  text: user.displayName.toString().toUpperCase(),
+                  style: GoogleFonts.poppins(
+                    textStyle: const TextStyle(
+                      letterSpacing: 1,
+                      fontWeight: FontWeight.w500,
+                      fontSize: 17,
+                      color: Color.fromRGBO(196, 13, 15, 1),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(top: 20, right: 20),
+            child: CircleAvatar(
+              radius: 20,
+              backgroundImage: NetworkImage("${user.photoURL}"),
+            ),
+          ),
+        ],
+      ),
       body: Center(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.max,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             ElevatedButton(
               onPressed: () {
