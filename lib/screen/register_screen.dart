@@ -1,12 +1,12 @@
 // ignore_for_file: equal_elements_in_set
 
-import 'package:email_validator/email_validator.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:psip_app/main.dart';
+import 'package:psip_app/model/user_model.dart';
 import 'package:psip_app/model/utils.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -20,8 +20,10 @@ class RegisterScreen extends StatefulWidget {
 
 class _RegisterScreenState extends State<RegisterScreen> {
   final formKey = GlobalKey<FormState>();
+  final displayNameController = TextEditingController();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
+  final confirmPasswordController = TextEditingController();
 
   bool isVisible = true;
   bool isVisible2 = true;
@@ -142,8 +144,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                 ),
                 TextFormField(
-                  keyboardType: TextInputType.emailAddress,
+                  keyboardType: TextInputType.name,
                   textInputAction: TextInputAction.next,
+                  controller: displayNameController,
+                  onSaved: (value) {
+                    displayNameController.text = value!;
+                  },
                   decoration: const InputDecoration(
                     floatingLabelBehavior: FloatingLabelBehavior.never,
                     labelText: 'Nama lengkap',
@@ -169,10 +175,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   keyboardType: TextInputType.emailAddress,
                   textInputAction: TextInputAction.next,
                   autovalidateMode: AutovalidateMode.onUserInteraction,
-                  validator: (email) =>
-                      email != null && !EmailValidator.validate(email)
-                          ? 'Masukkan email yang valid'
-                          : null,
+                  validator: (email) {
+                    if (email!.isEmpty) {
+                      return ("Silahkan Masukkan Email Anda");
+                    }
+                    // reg expression for email validation
+                    if (!RegExp("[a-zA-Z0-9+_.-]+@[a-zA-Z0-9.-]+.[a-z]")
+                        .hasMatch(email)) {
+                      return ("Email yang Anda Masukkan Salah");
+                    }
+                    return null;
+                  },
+                  onSaved: (email) {
+                    emailController.text = email!;
+                  },
                   decoration: const InputDecoration(
                     errorStyle: TextStyle(color: Colors.yellow),
                     floatingLabelBehavior: FloatingLabelBehavior.never,
@@ -200,9 +216,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   keyboardType: TextInputType.visiblePassword,
                   textInputAction: TextInputAction.next,
                   autovalidateMode: AutovalidateMode.onUserInteraction,
-                  validator: (value) => value != null && value.length < 8
-                      ? 'Kata sandi min. 8 karakter'
-                      : null,
+                  validator: (value) {
+                    RegExp regex = RegExp(r'^.{8,}$');
+                    if (value!.isEmpty) {
+                      return ("Silahkan Masukkan Kata Sandi Anda");
+                    }
+                    if (!regex.hasMatch(value)) {
+                      return ("Kata Sandi yang Anda Masukkan Salah(Min. 8 Karakter)");
+                    }
+                    return null;
+                  },
+                  onSaved: (value) {
+                    passwordController.text = value!;
+                  },
                   decoration: InputDecoration(
                     errorStyle: const TextStyle(color: Colors.yellow),
                     floatingLabelBehavior: FloatingLabelBehavior.never,
@@ -228,8 +254,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 TextFormField(
                   obscureText: isVisible2,
                   keyboardType: TextInputType.visiblePassword,
+                  controller: confirmPasswordController,
                   textInputAction: TextInputAction.go,
+                  validator: (value) {
+                    if (confirmPasswordController.text !=
+                        passwordController.text) {
+                      return "Kata Sandi tidak sama";
+                    }
+                    return null;
+                  },
+                  onSaved: (value) {
+                    confirmPasswordController.text = value!;
+                  },
                   decoration: InputDecoration(
+                    errorStyle: const TextStyle(color: Colors.yellow),
                     floatingLabelBehavior: FloatingLabelBehavior.never,
                     labelText: 'Konfirmasi kata sandi',
                     hintText: 'Masukkan konfirmasi kata sandi anda',
@@ -261,7 +299,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
                   onPressed: () {
-                    signUp();
+                    signUp(emailController.text, passwordController.text);
                   },
                   child: Text(
                     "Daftar",
@@ -300,15 +338,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  Future signUp() async {
+  Future signUp(String email, String password) async {
     final isValid = formKey.currentState!.validate();
     if (!isValid) return;
 
     try {
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: emailController.text.trim(),
-        password: passwordController.text.trim(),
-      );
+      await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      )
+          .then((value) {
+        postDetailsToFirestore();
+      });
     } on FirebaseAuthException catch (e) {
       if (kDebugMode) {
         print(e);
@@ -316,10 +358,33 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
       Utils.showSnackBar(e.message);
     }
-    navigatorKey.currentState!.popUntil(
+    GlobalKey<NavigatorState>().currentState!.popUntil(
       (route) {
         return route.isFirst;
       },
     );
+  }
+
+  postDetailsToFirestore() async {
+    // calling our firestore
+    // calling our user model
+    // sending these values
+
+    UserModel userModel = UserModel();
+
+    userModel.email = FirebaseAuth.instance.currentUser!.email;
+    userModel.uid = FirebaseAuth.instance.currentUser!.uid;
+    userModel.displayName = displayNameController.text;
+    userModel.phoneNumber = null;
+    userModel.address = '';
+
+    await FirebaseFirestore.instance
+        .collection("users")
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .set(userModel.toMap());
+
+    GlobalKey<NavigatorState>()
+        .currentState!
+        .popUntil((route) => route.isFirst);
   }
 }

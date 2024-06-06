@@ -1,10 +1,12 @@
 import 'dart:math';
 import 'dart:ui';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:psip_app/model/user_model.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -14,6 +16,21 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  UserModel user = UserModel();
+
+  @override
+  void initState() {
+    super.initState();
+    FirebaseFirestore.instance
+        .collection('users')
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .get()
+        .then((value) {
+      user = UserModel.fromMap(value.data());
+      setState(() {});
+    });
+  }
+
   final double coverHeight = 230;
 
   @override
@@ -43,9 +60,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             backgroundColor: Colors.primaries[
                                 Random().nextInt(Colors.primaries.length)],
                             child: Text(
-                              FirebaseAuth.instance.currentUser!.displayName!
-                                  .substring(0, 2)
-                                  .toUpperCase(),
+                              user.displayName!.substring(0, 2).toUpperCase(),
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,
@@ -59,8 +74,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           TextSpan(
                             children: [
                               TextSpan(
-                                text:
-                                    "${FirebaseAuth.instance.currentUser!.displayName!.toUpperCase()}\n",
+                                text: "${user.displayName!.toUpperCase()}\n",
                                 style: GoogleFonts.poppins(
                                   textStyle: const TextStyle(
                                     fontWeight: FontWeight.bold,

@@ -1,6 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:psip_app/model/user_model.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -10,7 +13,20 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final user = FirebaseAuth.instance.currentUser!;
+  UserModel user = UserModel();
+
+  @override
+  void initState() {
+    super.initState();
+    FirebaseFirestore.instance
+        .collection('users')
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .get()
+        .then((value) {
+      user = UserModel.fromMap(value.data());
+      setState(() {});
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,10 +50,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 TextSpan(
-                  text: user.displayName.toString().toUpperCase(),
+                  text: user.displayName!.toUpperCase(),
                   style: GoogleFonts.poppins(
                     textStyle: const TextStyle(
-                      letterSpacing: 1,
                       fontWeight: FontWeight.w500,
                       fontSize: 17,
                       color: Color.fromRGBO(196, 13, 15, 1),
@@ -50,10 +65,11 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         actions: [
           Padding(
-            padding: const EdgeInsets.only(top: 20, right: 20),
-            child: CircleAvatar(
-              radius: 20,
-              backgroundImage: NetworkImage("${user.photoURL}"),
+            padding: const EdgeInsets.only(top: 10, right: 10),
+            child: IconButton(
+              iconSize: 40,
+              onPressed: () {},
+              icon: const Icon(FluentIcons.cart_24_regular),
             ),
           ),
         ],
