@@ -2,16 +2,14 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:psip_app/main.dart';
 import 'package:psip_app/model/utils.dart';
-import 'package:psip_app/screen/forgot_sreen.dart';
 
 class LoginScreen extends StatefulWidget {
-  final VoidCallback onClickedSignUp;
-
-  const LoginScreen({super.key, required this.onClickedSignUp});
+  const LoginScreen({super.key});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -194,10 +192,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   onTap: () {
-                    Navigator.of(context)
-                        .push(MaterialPageRoute(builder: (context) {
-                      return const ForgotPassworScreen();
-                    }));
+                    Get.toNamed('/forgot-password');
                   },
                 ),
               ),
@@ -264,7 +259,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     children: [
                       TextSpan(
                         recognizer: TapGestureRecognizer()
-                          ..onTap = widget.onClickedSignUp,
+                          ..onTap = () {
+                            Get.toNamed('/register');
+                          },
                         text: 'Daftar akun',
                         style: const TextStyle(
                           color: Colors.lightBlue,
@@ -297,16 +294,12 @@ class _LoginScreenState extends State<LoginScreen> {
         email: emailController.text.trim(),
         password: passwordController.text.trim(),
       );
+      Get.offAllNamed('/');
     } on FirebaseAuthException catch (e) {
       if (kDebugMode) {
         print(e);
       }
       Utils.showSnackBar(e.message);
     }
-    navigatorKey.currentState!.popUntil(
-      (route) {
-        return route.isFirst;
-      },
-    );
   }
 }

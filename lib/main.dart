@@ -7,8 +7,12 @@ import 'package:provider/provider.dart';
 import 'package:psip_app/model/utils.dart';
 import 'package:psip_app/screen/auth_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:psip_app/screen/forgot_sreen.dart';
+import 'package:psip_app/screen/login_screen.dart';
+import 'package:psip_app/screen/register_screen.dart';
 import 'package:psip_app/screen/verifyemail_screen.dart';
 import 'firebase_options.dart';
+import 'package:get/get.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,32 +22,38 @@ void main() async {
   runApp(const MyApp());
 }
 
-final navigatorKey = GlobalKey<NavigatorState>();
-
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => GoogleSignInProvider(),
-      child: MaterialApp(
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => GoogleSignInProvider()),
+      ],
+      child: GetMaterialApp(
         scaffoldMessengerKey: Utils.messengerKey,
         title: 'PSIP APP',
         theme: ThemeData(
           textTheme: GoogleFonts.interTextTheme(),
           visualDensity: VisualDensity.adaptivePlatformDensity,
         ),
-        navigatorKey: navigatorKey,
         debugShowCheckedModeBanner: false,
-        home: const PSIPAPP(),
+        initialRoute: '/',
+        routes: {
+          '/': (context) => const PSIPApp(),
+          '/verify': (context) => const VerifyScreen(),
+          '/forgot-password': (context) => const ForgotPasswordScreen(),
+          '/register': (context) => const RegisterScreen(),
+          '/login': (context) => const LoginScreen(),
+        },
       ),
     );
   }
 }
 
-class PSIPAPP extends StatelessWidget {
-  const PSIPAPP({super.key});
+class PSIPApp extends StatelessWidget {
+  const PSIPApp({super.key});
 
   @override
   Widget build(BuildContext context) {

@@ -5,14 +5,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:psip_app/model/user_model.dart';
 import 'package:psip_app/model/utils.dart';
 
 class RegisterScreen extends StatefulWidget {
-  final Function() onClickedSignIn;
-
-  const RegisterScreen({super.key, required this.onClickedSignIn});
+  const RegisterScreen({super.key});
 
   @override
   State<RegisterScreen> createState() => _RegisterScreenState();
@@ -319,7 +318,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     children: [
                       TextSpan(
                         recognizer: TapGestureRecognizer()
-                          ..onTap = widget.onClickedSignIn,
+                          ..onTap = () {
+                            Get.offAllNamed('/login');
+                          },
                         text: 'Masuk',
                         style: const TextStyle(
                           color: Colors.lightBlue,

@@ -50,7 +50,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 TextSpan(
-                  text: user.displayName!.toUpperCase(),
+                  text: user.displayName?.toUpperCase() ?? 'Loading...',
                   style: GoogleFonts.poppins(
                     textStyle: const TextStyle(
                       fontWeight: FontWeight.w500,
@@ -83,7 +83,7 @@ class _HomeScreenState extends State<HomeScreen> {
               onPressed: () {
                 FirebaseAuth.instance.signOut();
               },
-              child: Text(user.email!),
+              child: Text(user.email ?? 'Loading...'),
             ),
           ],
         ),

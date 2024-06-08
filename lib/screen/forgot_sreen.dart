@@ -7,14 +7,14 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:psip_app/model/utils.dart';
 
-class ForgotPassworScreen extends StatefulWidget {
-  const ForgotPassworScreen({super.key});
+class ForgotPasswordScreen extends StatefulWidget {
+  const ForgotPasswordScreen({super.key});
 
   @override
-  State<ForgotPassworScreen> createState() => _ForgotPassworScreenState();
+  State<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
 }
 
-class _ForgotPassworScreenState extends State<ForgotPassworScreen> {
+class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final formKey = GlobalKey<FormState>();
   final emailController = TextEditingController();
 
