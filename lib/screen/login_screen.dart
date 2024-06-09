@@ -9,7 +9,9 @@ import 'package:psip_app/main.dart';
 import 'package:psip_app/model/utils.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  const LoginScreen({super.key, required this.onClickedSignUp});
+
+  final VoidCallback onClickedSignUp;
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -260,7 +262,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       TextSpan(
                         recognizer: TapGestureRecognizer()
                           ..onTap = () {
-                            Get.toNamed('/register');
+                            widget.onClickedSignUp();
                           },
                         text: 'Daftar akun',
                         style: const TextStyle(

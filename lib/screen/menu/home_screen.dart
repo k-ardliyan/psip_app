@@ -33,61 +33,49 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
+        toolbarHeight: 90,
         backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: false,
-        title: Padding(
-          padding: const EdgeInsets.only(top: 20),
-          child: RichText(
-            text: TextSpan(
-              children: [
-                const TextSpan(
-                  text: 'Selamat datang,\n',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 20,
-                    color: Colors.black,
+        title: RichText(
+          text: TextSpan(
+            children: [
+              const TextSpan(
+                text: 'Selamat datang,\n',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20,
+                  color: Colors.black,
+                ),
+              ),
+              TextSpan(
+                text: user.displayName?.toUpperCase() ?? '******',
+                style: GoogleFonts.poppins(
+                  textStyle: const TextStyle(
+                    fontWeight: FontWeight.w500,
+                    fontSize: 17,
+                    color: Color.fromRGBO(196, 13, 15, 1),
                   ),
                 ),
-                TextSpan(
-                  text: user.displayName?.toUpperCase() ?? 'Loading...',
-                  style: GoogleFonts.poppins(
-                    textStyle: const TextStyle(
-                      fontWeight: FontWeight.w500,
-                      fontSize: 17,
-                      color: Color.fromRGBO(196, 13, 15, 1),
-                    ),
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
         actions: [
           Padding(
-            padding: const EdgeInsets.only(top: 10, right: 10),
+            padding: const EdgeInsets.only(right: 20),
             child: IconButton(
-              iconSize: 40,
+              iconSize: 30,
               onPressed: () {},
-              icon: const Icon(FluentIcons.cart_24_regular),
+              icon: const Icon(
+                FluentIcons.cart_24_filled,
+                color: Color.fromRGBO(196, 13, 15, 1),
+              ),
             ),
           ),
         ],
       ),
-      body: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            ElevatedButton(
-              onPressed: () {
-                FirebaseAuth.instance.signOut();
-              },
-              child: Text(user.email ?? 'Loading...'),
-            ),
-          ],
-        ),
-      ),
+      body: const Center(),
     );
   }
 }

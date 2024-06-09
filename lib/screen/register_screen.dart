@@ -11,7 +11,9 @@ import 'package:psip_app/model/user_model.dart';
 import 'package:psip_app/model/utils.dart';
 
 class RegisterScreen extends StatefulWidget {
-  const RegisterScreen({super.key});
+  const RegisterScreen({super.key, required this.onClickedSignin});
+
+  final VoidCallback onClickedSignin;
 
   @override
   State<RegisterScreen> createState() => _RegisterScreenState();
@@ -173,7 +175,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   controller: emailController,
                   keyboardType: TextInputType.emailAddress,
                   textInputAction: TextInputAction.next,
-                  autovalidateMode: AutovalidateMode.onUserInteraction,
                   validator: (email) {
                     if (email!.isEmpty) {
                       return ("Silahkan Masukkan Email Anda");
@@ -214,7 +215,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   obscureText: isVisible,
                   keyboardType: TextInputType.visiblePassword,
                   textInputAction: TextInputAction.next,
-                  autovalidateMode: AutovalidateMode.onUserInteraction,
                   validator: (value) {
                     RegExp regex = RegExp(r'^.{8,}$');
                     if (value!.isEmpty) {
@@ -319,7 +319,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       TextSpan(
                         recognizer: TapGestureRecognizer()
                           ..onTap = () {
-                            Get.offAllNamed('/login');
+                            widget.onClickedSignin();
                           },
                         text: 'Masuk',
                         style: const TextStyle(
@@ -351,6 +351,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
       )
           .then((value) {
         postDetailsToFirestore();
+        FirebaseFirestore.instance
+            .collection('users')
+            .doc(FirebaseAuth.instance.currentUser!.uid)
+            .update(
+          {
+            'role': 'User',
+          },
+        );
+        Get.offAllNamed('/');
       });
     } on FirebaseAuthException catch (e) {
       if (kDebugMode) {
@@ -376,8 +385,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
     userModel.email = FirebaseAuth.instance.currentUser!.email;
     userModel.uid = FirebaseAuth.instance.currentUser!.uid;
     userModel.displayName = displayNameController.text;
-    userModel.phoneNumber = null;
-    userModel.address = '';
+    userModel.phoneNumber = FirebaseAuth.instance.currentUser!.phoneNumber;
+    userModel.photoURL = FirebaseAuth.instance.currentUser!.photoURL;
+    userModel.address = null;
 
     await FirebaseFirestore.instance
         .collection("users")

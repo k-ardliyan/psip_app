@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -8,8 +9,7 @@ import 'package:psip_app/model/utils.dart';
 import 'package:psip_app/screen/auth_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:psip_app/screen/forgot_sreen.dart';
-import 'package:psip_app/screen/login_screen.dart';
-import 'package:psip_app/screen/register_screen.dart';
+import 'package:psip_app/screen/menu/profile%20menu/change_password.dart';
 import 'package:psip_app/screen/verifyemail_screen.dart';
 import 'firebase_options.dart';
 import 'package:get/get.dart';
@@ -29,7 +29,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (context) => GoogleSignInProvider()),
+        ChangeNotifierProvider(
+          create: (context) => GoogleSignInProvider(),
+        ),
       ],
       child: GetMaterialApp(
         scaffoldMessengerKey: Utils.messengerKey,
@@ -41,11 +43,12 @@ class MyApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         initialRoute: '/',
         routes: {
+          '/root': (context) => const MyApp(),
           '/': (context) => const PSIPApp(),
-          '/verify': (context) => const VerifyScreen(),
+          '/auth-screen': (context) => const AuthScreen(),
           '/forgot-password': (context) => const ForgotPasswordScreen(),
-          '/register': (context) => const RegisterScreen(),
-          '/login': (context) => const LoginScreen(),
+          '/verify': (context) => const VerifyScreen(),
+          '/change-password': (context) => const ChangePassword(),
         },
       ),
     );
@@ -87,6 +90,7 @@ class GoogleSignInProvider extends ChangeNotifier {
   GoogleSignInAccount get user => _user!;
 
   Future googleLogin() async {
+    bool result = false;
     try {
       final googleUser = await googleSignIn.signIn();
 
@@ -101,7 +105,30 @@ class GoogleSignInProvider extends ChangeNotifier {
         idToken: googleAuth.idToken,
       );
 
-      await FirebaseAuth.instance.signInWithCredential(credential);
+      UserCredential userCredential =
+          await FirebaseAuth.instance.signInWithCredential(credential);
+      User? user = userCredential.user;
+
+      if (user != null) {
+        if (userCredential.additionalUserInfo!.isNewUser) {
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(user.uid)
+              .set(
+            {
+              'uid': user.uid,
+              'email': user.email,
+              'address': null,
+              'displayName': user.displayName,
+              'phoneNumber': user.phoneNumber,
+              'photoURL': user.photoURL,
+              'role': 'User',
+            },
+          );
+        }
+        result = true;
+      }
+      return result;
     } catch (e) {
       if (kDebugMode) {
         print(e.toString());
@@ -109,10 +136,11 @@ class GoogleSignInProvider extends ChangeNotifier {
     }
 
     notifyListeners();
+    return result;
   }
 
   Future logout() async {
-    await googleSignIn.disconnect();
+    await googleSignIn.signOut();
     FirebaseAuth.instance.signOut();
   }
 }

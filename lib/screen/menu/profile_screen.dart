@@ -1,11 +1,13 @@
-import 'dart:math';
 import 'dart:ui';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import 'package:psip_app/main.dart';
 import 'package:psip_app/model/user_model.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -35,7 +37,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  final double coverHeight = 230;
+  final double coverHeight = 200;
 
   @override
   Widget build(BuildContext context) {
@@ -50,12 +52,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
               children: [
                 buildCoverImage(),
                 Positioned(
-                  top: coverHeight / 1.75,
+                  top: coverHeight / 1.8,
                   child: Card(
                     color: Colors.white,
                     child: SizedBox(
-                      height: coverHeight / 1.25,
-                      width: MediaQuery.of(context).size.width - 25,
+                      height: coverHeight / 1.2,
+                      width: MediaQuery.of(context).size.width - 40,
                       child: Column(
                         children: [
                           Row(
@@ -63,9 +65,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               Padding(
                                 padding: const EdgeInsets.all(20),
                                 child: CircleAvatar(
-                                  radius: 40,
-                                  backgroundColor: Colors.primaries[Random()
-                                      .nextInt(Colors.primaries.length)],
+                                  radius: 35,
+                                  backgroundColor: Colors.grey.shade800,
                                   child: Text(
                                     user?.displayName
                                             ?.substring(0, 2)
@@ -89,44 +90,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       style: GoogleFonts.poppins(
                                         textStyle: const TextStyle(
                                           fontWeight: FontWeight.bold,
-                                          fontSize: 20,
+                                          fontSize: 18,
                                         ),
                                       ),
                                     ),
                                     TextSpan(
                                       text: FirebaseAuth
-                                              .instance.currentUser?.uid ??
+                                              .instance.currentUser?.uid
+                                              .substring(0, 8)
+                                              .toUpperCase() ??
                                           '*****',
                                     ),
                                   ],
                                 ),
                               ),
                             ],
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
-                            child: OutlinedButton.icon(
-                              onPressed: () {},
-                              style: OutlinedButton.styleFrom(
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                fixedSize: Size(
-                                  MediaQuery.of(context).size.width,
-                                  45,
-                                ),
-                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                iconColor: Colors.black87,
-                              ),
-                              icon: const Icon(FluentIcons.person_20_filled),
-                              label: Text(
-                                "Lihat Profil",
-                                style: GoogleFonts.poppins(
-                                  textStyle:
-                                      const TextStyle(color: Colors.black87),
-                                ),
-                              ),
-                            ),
                           ),
                         ],
                       ),
@@ -136,79 +114,160 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ],
             ),
             SizedBox(
-              height: coverHeight / 2,
+              height: coverHeight / 9,
             ),
-            ElevatedButton(
-              onPressed: () {},
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 10),
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                fixedSize: Size(MediaQuery.of(context).size.width - 25, 45),
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 40),
+              child: OutlinedButton.icon(
+                onPressed: () {},
+                style: OutlinedButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  fixedSize: Size(
+                    MediaQuery.of(context).size.width,
+                    40,
+                  ),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  iconColor: Colors.black87,
+                ),
+                icon: const Icon(FluentIcons.person_20_filled),
+                label: Text(
+                  "Lihat Profil",
+                  style: GoogleFonts.poppins(
+                    textStyle: const TextStyle(color: Colors.black87),
+                  ),
+                ),
               ),
+            ),
+            SizedBox(
+              height: coverHeight / 4.5,
+            ),
+            SizedBox(
+              width: MediaQuery.of(context).size.width - 25,
               child: ListTile(
+                onTap: () {
+                  Get.toNamed('/change-password');
+                },
                 dense: true,
                 horizontalTitleGap: 10,
-                leading: const Icon(FluentIcons.password_reset_48_regular),
+                leading: IconButton.filled(
+                  onPressed: null,
+                  icon: const Icon(
+                    FluentIcons.password_reset_48_regular,
+                    color: Colors.white,
+                  ),
+                  style: IconButton.styleFrom(
+                    disabledBackgroundColor:
+                        const Color.fromRGBO(196, 13, 15, 1),
+                  ),
+                ),
                 title: Text(
-                  "Ganti Kata Sandi",
+                  "Ubah Kata Sandi",
                   style: GoogleFonts.poppins(
                     textStyle: const TextStyle(
-                      fontSize: 17,
+                      fontSize: 16,
                     ),
                   ),
                 ),
-                trailing: const Icon(FluentIcons.arrow_right_48_regular),
+                trailing: const Icon(FluentIcons.chevron_right_48_filled),
               ),
             ),
             const SizedBox(
               height: 20,
             ),
-            ElevatedButton(
-              onPressed: () {},
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 10),
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                fixedSize: Size(MediaQuery.of(context).size.width - 25, 45),
-              ),
+            SizedBox(
+              width: MediaQuery.of(context).size.width - 25,
               child: ListTile(
+                onTap: () {},
                 dense: true,
                 horizontalTitleGap: 10,
-                leading: const Icon(
-                    FluentIcons.text_bullet_list_square_clock_20_regular),
+                leading: IconButton.filled(
+                  onPressed: null,
+                  icon: const Icon(
+                    FluentIcons.text_bullet_list_square_clock_20_regular,
+                    color: Colors.white,
+                  ),
+                  style: IconButton.styleFrom(
+                    disabledBackgroundColor:
+                        const Color.fromRGBO(196, 13, 15, 1),
+                  ),
+                ),
                 title: Text(
                   "Riwayat Pesanan",
                   style: GoogleFonts.poppins(
                     textStyle: const TextStyle(
-                      fontSize: 17,
+                      fontSize: 16,
                     ),
                   ),
                 ),
-                trailing: const Icon(FluentIcons.arrow_right_48_regular),
+                trailing: const Icon(FluentIcons.chevron_right_48_filled),
               ),
             ),
             const SizedBox(
               height: 20,
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                IconButton.filled(
-                  onPressed: () {},
-                  icon: const Icon(FluentIcons.person_support_24_regular),
+            SizedBox(
+              width: MediaQuery.of(context).size.width - 25,
+              child: ListTile(
+                onTap: () {},
+                dense: true,
+                horizontalTitleGap: 10,
+                leading: IconButton.filled(
+                  onPressed: null,
+                  icon: const Icon(
+                    FluentIcons.person_support_24_regular,
+                    color: Colors.white,
+                  ),
                   style: IconButton.styleFrom(
-                    backgroundColor: const Color.fromRGBO(196, 13, 15, 1),
+                    disabledBackgroundColor:
+                        const Color.fromRGBO(196, 13, 15, 1),
                   ),
                 ),
-                IconButton.filled(
-                  onPressed: () {
-                    FirebaseAuth.instance.signOut();
-                  },
-                  icon: const Icon(FluentIcons.arrow_exit_20_regular),
-                  style: IconButton.styleFrom(
-                    backgroundColor: const Color.fromRGBO(196, 13, 15, 1),
+                title: Text(
+                  "Layanan Pelanggan",
+                  style: GoogleFonts.poppins(
+                    textStyle: const TextStyle(
+                      fontSize: 16,
+                    ),
                   ),
                 ),
-              ],
+                trailing: const Icon(FluentIcons.chevron_right_48_filled),
+              ),
+            ),
+            const SizedBox(
+              height: 20,
+            ),
+            SizedBox(
+              width: MediaQuery.of(context).size.width - 25,
+              child: ListTile(
+                onTap: () {
+                  Provider.of<GoogleSignInProvider>(context, listen: false)
+                      .logout();
+                },
+                dense: true,
+                horizontalTitleGap: 10,
+                leading: IconButton.filled(
+                  onPressed: null,
+                  icon: const Icon(
+                    FluentIcons.sign_out_20_regular,
+                    color: Colors.white,
+                  ),
+                  style: IconButton.styleFrom(
+                    disabledBackgroundColor:
+                        const Color.fromRGBO(196, 13, 15, 1),
+                  ),
+                ),
+                title: Text(
+                  "Keluar",
+                  style: GoogleFonts.poppins(
+                    textStyle: const TextStyle(
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+                trailing: const Icon(FluentIcons.chevron_right_48_filled),
+              ),
             ),
           ],
         ),

@@ -20,66 +20,68 @@ class BottomNavBar extends StatelessWidget {
       ),
       bottomNavigationBar: GetBuilder<BottomBarController>(
         init: BottomBarController(),
-        builder: (controller) => Obx(() => NavigationBarTheme(
-              data: NavigationBarThemeData(
-                labelTextStyle: WidgetStateProperty.resolveWith<TextStyle>(
-                  (Set<WidgetState> states) =>
-                      states.contains(WidgetState.selected)
-                          ? const TextStyle(
-                              color: Color.fromRGBO(196, 13, 15, 1),
-                              fontWeight: FontWeight.bold,
-                            )
-                          : const TextStyle(color: Colors.black),
-                ),
+        builder: (controller) => Obx(
+          () => NavigationBarTheme(
+            data: NavigationBarThemeData(
+              labelTextStyle: WidgetStateProperty.resolveWith<TextStyle>(
+                (Set<WidgetState> states) =>
+                    states.contains(WidgetState.selected)
+                        ? const TextStyle(
+                            color: Color.fromRGBO(196, 13, 15, 1),
+                            fontWeight: FontWeight.bold,
+                          )
+                        : const TextStyle(color: Colors.black),
               ),
-              child: NavigationBar(
-                height: 75,
-                elevation: 0,
-                backgroundColor: Colors.white,
-                indicatorColor: Colors.transparent,
-                selectedIndex: controller.selectedIndex,
-                onDestinationSelected: (index) => controller.changeIndex(index),
-                destinations: [
-                  NavigationDestination(
-                      icon: Icon(
-                        color: controller.selectedIndex == 0
+            ),
+            child: NavigationBar(
+              height: 75,
+              elevation: 0,
+              backgroundColor: Colors.white,
+              indicatorColor: Colors.transparent,
+              selectedIndex: controller.selectedIndex,
+              onDestinationSelected: (index) => controller.changeIndex(index),
+              destinations: [
+                NavigationDestination(
+                    icon: Icon(
+                      color: controller.selectedIndex == 0
+                          ? const Color.fromRGBO(196, 13, 15, 1)
+                          : Colors.black,
+                      controller.selectedIndex == 0
+                          ? FluentIcons.home_12_filled
+                          : FluentIcons.home_12_regular,
+                    ),
+                    label: "Beranda"),
+                NavigationDestination(
+                    icon: Icon(
+                        color: controller.selectedIndex == 1
                             ? const Color.fromRGBO(196, 13, 15, 1)
                             : Colors.black,
-                        controller.selectedIndex == 0
-                            ? FluentIcons.home_12_filled
-                            : FluentIcons.home_12_regular,
-                      ),
-                      label: "Beranda"),
-                  NavigationDestination(
-                      icon: Icon(
-                          color: controller.selectedIndex == 1
-                              ? const Color.fromRGBO(196, 13, 15, 1)
-                              : Colors.black,
-                          controller.selectedIndex == 1
-                              ? FluentIcons.ticket_diagonal_28_filled
-                              : FluentIcons.ticket_diagonal_28_regular),
-                      label: "Tiket"),
-                  NavigationDestination(
-                      icon: Icon(
-                          color: controller.selectedIndex == 2
-                              ? const Color.fromRGBO(196, 13, 15, 1)
-                              : Colors.black,
-                          controller.selectedIndex == 2
-                              ? Icons.leaderboard_rounded
-                              : Icons.leaderboard_outlined),
-                      label: "Klasemen"),
-                  NavigationDestination(
-                      icon: Icon(
-                          color: controller.selectedIndex == 3
-                              ? const Color.fromRGBO(196, 13, 15, 1)
-                              : Colors.black,
-                          controller.selectedIndex == 3
-                              ? FluentIcons.person_48_filled
-                              : FluentIcons.person_48_regular),
-                      label: "Akun"),
-                ],
-              ),
-            )),
+                        controller.selectedIndex == 1
+                            ? FluentIcons.ticket_diagonal_28_filled
+                            : FluentIcons.ticket_diagonal_28_regular),
+                    label: "Tiket"),
+                NavigationDestination(
+                    icon: Icon(
+                        color: controller.selectedIndex == 2
+                            ? const Color.fromRGBO(196, 13, 15, 1)
+                            : Colors.black,
+                        controller.selectedIndex == 2
+                            ? Icons.leaderboard_rounded
+                            : Icons.leaderboard_outlined),
+                    label: "Klasemen"),
+                NavigationDestination(
+                    icon: Icon(
+                        color: controller.selectedIndex == 3
+                            ? const Color.fromRGBO(196, 13, 15, 1)
+                            : Colors.black,
+                        controller.selectedIndex == 3
+                            ? FluentIcons.person_48_filled
+                            : FluentIcons.person_48_regular),
+                    label: "Akun"),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

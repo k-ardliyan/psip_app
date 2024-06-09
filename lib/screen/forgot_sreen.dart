@@ -27,32 +27,42 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        iconTheme: const IconThemeData(color: Colors.white),
-        backgroundColor: const Color.fromRGBO(196, 13, 15, 1),
+        backgroundColor: Colors.white,
         elevation: 0,
-        centerTitle: true,
-        title: const Text(
-          "Atur ulang kata sandi",
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
       ),
       body: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 15),
+        padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Form(
           key: formKey,
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text(
-                "Menerima email untuk mengatur ulang kata sandi Anda",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
+              Align(
+                alignment: Alignment.centerLeft,
+                child: RichText(
+                  text: TextSpan(
+                    children: [
+                      TextSpan(
+                        text: "Cari akun Anda\n",
+                        style: GoogleFonts.poppins(
+                          textStyle: const TextStyle(
+                            color: Colors.black,
+                            fontSize: 25,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      const TextSpan(
+                        text:
+                            "Masukan email untuk mengatur ulang\nkata sandi Anda.",
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
               const SizedBox(
@@ -72,7 +82,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   focusedBorder: OutlineInputBorder(
                     borderSide: BorderSide(
                       color: Colors.blueAccent,
-                      width: 2,
+                      width: 1,
                     ),
                   ),
                   filled: true,
@@ -84,12 +94,25 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         : null,
               ),
               const SizedBox(
+                height: 5,
+              ),
+              const Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  "Anda mungkin menerima notifikasi dari kami\nuntuk tujuan keamanan dan login",
+                  style: TextStyle(
+                    color: Colors.black87,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+              const SizedBox(
                 height: 20,
               ),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   shape: const StadiumBorder(),
-                  backgroundColor: Colors.blue,
+                  backgroundColor: const Color.fromRGBO(196, 13, 15, 1),
                   fixedSize: Size(
                     MediaQuery.of(context).size.width,
                     45,

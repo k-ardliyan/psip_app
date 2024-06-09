@@ -78,31 +78,37 @@ class _VerifyScreenState extends State<VerifyScreen> {
     return isEmailVerified
         ? const BottomNavBar()
         : Scaffold(
-            appBar: AppBar(
-              iconTheme: const IconThemeData(color: Colors.white),
-              backgroundColor: const Color.fromRGBO(196, 13, 15, 1),
-              elevation: 0,
-              centerTitle: true,
-              title: const Text(
-                "Verifikasi Email",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
             body: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 15),
+              padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text(
-                    "Email verifikasi telah dikirim ke email Anda.",
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: RichText(
+                      text: TextSpan(
+                        children: [
+                          TextSpan(
+                            text: "Verifikasi email\n",
+                            style: GoogleFonts.poppins(
+                              textStyle: const TextStyle(
+                                color: Colors.black,
+                                fontSize: 25,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                          const TextSpan(
+                            text:
+                                "Email verifikasi telah dikirim ke email Anda.\nSilahkan buka kotak pesan email dan klik tautan\nuntuk verifikasi agar aplikasi dapat digunakan.",
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    textAlign: TextAlign.center,
                   ),
                   const SizedBox(
                     height: 20,
@@ -110,7 +116,7 @@ class _VerifyScreenState extends State<VerifyScreen> {
                   ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
                       shape: const StadiumBorder(),
-                      backgroundColor: Colors.blue,
+                      backgroundColor: const Color.fromRGBO(196, 13, 15, 1),
                       fixedSize: Size(
                         MediaQuery.of(context).size.width,
                         45,
