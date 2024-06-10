@@ -30,52 +30,65 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        toolbarHeight: 90,
-        backgroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: false,
-        title: RichText(
-          text: TextSpan(
-            children: [
-              const TextSpan(
-                text: 'Selamat datang,\n',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 20,
-                  color: Colors.black,
+    return StreamBuilder<DocumentSnapshot>(
+        stream: FirebaseFirestore.instance
+            .collection('users')
+            .doc(FirebaseAuth.instance.currentUser?.uid)
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return Text('Error: ${snapshot.error}');
+          } else if (!snapshot.hasData) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          return Scaffold(
+            backgroundColor: Colors.white,
+            appBar: AppBar(
+              toolbarHeight: 90,
+              backgroundColor: Colors.white,
+              elevation: 0,
+              centerTitle: false,
+              title: RichText(
+                text: TextSpan(
+                  children: [
+                    const TextSpan(
+                      text: 'Selamat datang,\n',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20,
+                        color: Colors.black,
+                      ),
+                    ),
+                    TextSpan(
+                      text: snapshot.data!['displayName'].toUpperCase() ??
+                          '******',
+                      style: GoogleFonts.poppins(
+                        textStyle: const TextStyle(
+                          fontWeight: FontWeight.w500,
+                          fontSize: 17,
+                          color: Color.fromRGBO(196, 13, 15, 1),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              TextSpan(
-                text: user.displayName?.toUpperCase() ?? '******',
-                style: GoogleFonts.poppins(
-                  textStyle: const TextStyle(
-                    fontWeight: FontWeight.w500,
-                    fontSize: 17,
-                    color: Color.fromRGBO(196, 13, 15, 1),
+              actions: [
+                Padding(
+                  padding: const EdgeInsets.only(right: 20),
+                  child: IconButton(
+                    iconSize: 30,
+                    onPressed: () {},
+                    icon: const Icon(
+                      FluentIcons.cart_24_filled,
+                      color: Color.fromRGBO(196, 13, 15, 1),
+                    ),
                   ),
                 ),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 20),
-            child: IconButton(
-              iconSize: 30,
-              onPressed: () {},
-              icon: const Icon(
-                FluentIcons.cart_24_filled,
-                color: Color.fromRGBO(196, 13, 15, 1),
-              ),
+              ],
             ),
-          ),
-        ],
-      ),
-      body: const Center(),
-    );
+            body: const Center(),
+          );
+        });
   }
 }

@@ -71,21 +71,23 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               TextFormField(
                 controller: emailController,
                 textInputAction: TextInputAction.go,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   floatingLabelBehavior: FloatingLabelBehavior.never,
                   labelText: 'Email',
                   hintText: 'Masukkan email anda',
                   contentPadding:
-                      EdgeInsets.symmetric(vertical: 15, horizontal: 15),
-                  prefixIcon: Icon(Icons.mail),
-                  border: OutlineInputBorder(),
+                      const EdgeInsets.symmetric(vertical: 15, horizontal: 15),
+                  prefixIcon: const Icon(Icons.mail),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                   focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(
                       color: Colors.blueAccent,
                       width: 1,
                     ),
                   ),
-                  filled: true,
                 ),
                 autovalidateMode: AutovalidateMode.onUserInteraction,
                 validator: (email) =>

@@ -25,6 +25,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   final confirmPasswordController = TextEditingController();
+  final phoneNumberController = TextEditingController();
+  final addressController = TextEditingController();
+
+  String selectedGender = '';
 
   bool isVisible = true;
   bool isVisible2 = true;
@@ -148,10 +152,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   keyboardType: TextInputType.name,
                   textInputAction: TextInputAction.next,
                   controller: displayNameController,
+                  validator: (value) {
+                    if (value!.isEmpty) {
+                      return ("Silahkan masukkan nama lengkap Anda");
+                    }
+
+                    return null;
+                  },
                   onSaved: (value) {
                     displayNameController.text = value!;
                   },
                   decoration: const InputDecoration(
+                    errorStyle: TextStyle(color: Colors.yellow),
                     floatingLabelBehavior: FloatingLabelBehavior.never,
                     labelText: 'Nama lengkap',
                     hintText: 'Masukkan nama lengkap anda',
@@ -169,7 +181,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                 ),
                 const SizedBox(
-                  height: 8,
+                  height: 10,
                 ),
                 TextFormField(
                   controller: emailController,
@@ -180,9 +192,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       return ("Silahkan Masukkan Email Anda");
                     }
                     // reg expression for email validation
-                    if (!RegExp("[a-zA-Z0-9+_.-]+@[a-zA-Z0-9.-]+.[a-z]")
+                    if (!RegExp(r'^[\w-]+(\.[\w-]+)*@[\w-]+(\.[\w-]+)+$')
                         .hasMatch(email)) {
-                      return ("Email yang Anda Masukkan Salah");
+                      return ("Format email salah");
                     }
                     return null;
                   },
@@ -208,7 +220,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                 ),
                 const SizedBox(
-                  height: 8,
+                  height: 10,
                 ),
                 TextFormField(
                   controller: passwordController,
@@ -216,12 +228,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   keyboardType: TextInputType.visiblePassword,
                   textInputAction: TextInputAction.next,
                   validator: (value) {
-                    RegExp regex = RegExp(r'^.{8,}$');
                     if (value!.isEmpty) {
                       return ("Silahkan Masukkan Kata Sandi Anda");
-                    }
-                    if (!regex.hasMatch(value)) {
-                      return ("Kata Sandi yang Anda Masukkan Salah(Min. 8 Karakter)");
+                    } else if (!RegExp(r'^.{8,}$').hasMatch(value)) {
+                      return ("Kata sandi harus paling tidak 8 karakter");
+                    } else if (!RegExp(r'[a-z]').hasMatch(value)) {
+                      return 'Kata sandi harus mengandung setidaknya satu huruf kecil';
+                    } else if (!RegExp(r'[A-Z]').hasMatch(value)) {
+                      return 'Kata sandi harus mengandung setidaknya satu huruf kapital';
+                    } else if (!RegExp(r'[0-9]').hasMatch(value)) {
+                      return 'Kata sandi harus mengandung setidaknya satu angka';
                     }
                     return null;
                   },
@@ -248,14 +264,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                 ),
                 const SizedBox(
-                  height: 8,
+                  height: 10,
                 ),
                 TextFormField(
                   obscureText: isVisible2,
                   keyboardType: TextInputType.visiblePassword,
                   controller: confirmPasswordController,
-                  textInputAction: TextInputAction.go,
+                  textInputAction: TextInputAction.next,
                   validator: (value) {
+                    if (value!.isEmpty) {
+                      return ('Silahkan ulangi kata sandi Anda');
+                    }
                     if (confirmPasswordController.text !=
                         passwordController.text) {
                       return "Kata Sandi tidak sama";
@@ -284,6 +303,143 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     filled: true,
                   ),
                 ),
+                Container(
+                  margin: const EdgeInsets.symmetric(vertical: 10),
+                  child: Column(
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 20),
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            "Jenis kelamin",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ),
+                      Row(
+                        children: [
+                          Flexible(
+                            child: ListTile(
+                              horizontalTitleGap: 0,
+                              leading: Radio(
+                                fillColor:
+                                    const WidgetStatePropertyAll(Colors.blue),
+                                materialTapTargetSize:
+                                    MaterialTapTargetSize.shrinkWrap,
+                                value: 'Laki-laki',
+                                groupValue: selectedGender,
+                                onChanged: (value) =>
+                                    setState(() => selectedGender = value!),
+                              ),
+                              title: const Text(
+                                'Laki-laki',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ),
+                          Flexible(
+                            child: ListTile(
+                              horizontalTitleGap: 0,
+                              leading: Radio(
+                                fillColor:
+                                    const WidgetStatePropertyAll(Colors.blue),
+                                value: 'Perempuan',
+                                groupValue: selectedGender,
+                                onChanged: (value) =>
+                                    setState(() => selectedGender = value!),
+                              ),
+                              title: const Text(
+                                'Perempuan',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                TextFormField(
+                  keyboardType: TextInputType.phone,
+                  textInputAction: TextInputAction.next,
+                  controller: phoneNumberController,
+                  onSaved: (value) {
+                    phoneNumberController.text = value!;
+                  },
+                  validator: (value) {
+                    RegExp regex = RegExp(r'^(\+62|0)([8]\d{2,3})(\d{5,8})$');
+                    if (value!.isEmpty) {
+                      return ("Silahkan tulis nomor telepon Anda");
+                    }
+                    if (!regex.hasMatch(value)) {
+                      return ("Nomor telepon Anda tidak valid!");
+                    }
+
+                    return null;
+                  },
+                  decoration: const InputDecoration(
+                    errorStyle: TextStyle(color: Colors.yellow),
+                    floatingLabelBehavior: FloatingLabelBehavior.never,
+                    labelText: 'Nomor Telepon',
+                    hintText: 'Masukkan nomor telepon Anda',
+                    contentPadding:
+                        EdgeInsets.symmetric(vertical: 15, horizontal: 15),
+                    prefixIcon: Icon(Icons.smartphone),
+                    border: OutlineInputBorder(),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: Colors.blueAccent,
+                        width: 2,
+                      ),
+                    ),
+                    filled: true,
+                  ),
+                ),
+                const SizedBox(
+                  height: 10,
+                ),
+                TextFormField(
+                  keyboardType: TextInputType.streetAddress,
+                  textInputAction: TextInputAction.done,
+                  controller: addressController,
+                  onSaved: (value) {
+                    addressController.text = value!;
+                  },
+                  validator: (value) {
+                    if (value!.isEmpty) {
+                      return ("Silahkan masukkan alamat Anda");
+                    }
+
+                    return null;
+                  },
+                  decoration: const InputDecoration(
+                    errorStyle: TextStyle(color: Colors.yellow),
+                    floatingLabelBehavior: FloatingLabelBehavior.never,
+                    labelText: 'Alamat',
+                    hintText: 'Masukkan alamat Anda',
+                    contentPadding:
+                        EdgeInsets.symmetric(vertical: 15, horizontal: 15),
+                    prefixIcon: Icon(Icons.location_on),
+                    border: OutlineInputBorder(),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: Colors.blueAccent,
+                        width: 2,
+                      ),
+                    ),
+                    filled: true,
+                  ),
+                ),
                 const SizedBox(
                   height: 25,
                 ),
@@ -297,7 +453,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
-                  onPressed: () {
+                  onPressed: () async {
                     signUp(emailController.text, passwordController.text);
                   },
                   child: Text(
@@ -351,14 +507,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       )
           .then((value) {
         postDetailsToFirestore();
-        FirebaseFirestore.instance
-            .collection('users')
-            .doc(FirebaseAuth.instance.currentUser!.uid)
-            .update(
-          {
-            'role': 'User',
-          },
-        );
+      }).whenComplete(() {
         Get.offAllNamed('/');
       });
     } on FirebaseAuthException catch (e) {
@@ -384,15 +533,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     userModel.email = FirebaseAuth.instance.currentUser!.email;
     userModel.uid = FirebaseAuth.instance.currentUser!.uid;
+    userModel.address = addressController.text;
     userModel.displayName = displayNameController.text;
-    userModel.phoneNumber = FirebaseAuth.instance.currentUser!.phoneNumber;
+    userModel.gender = selectedGender;
+    userModel.phoneNumber = phoneNumberController.text;
     userModel.photoURL = FirebaseAuth.instance.currentUser!.photoURL;
-    userModel.address = null;
+    userModel.role = 'User';
 
     await FirebaseFirestore.instance
         .collection("users")
         .doc(FirebaseAuth.instance.currentUser!.uid)
-        .set(userModel.toMap());
+        .set(
+          userModel.toMap(),
+        );
 
     GlobalKey<NavigatorState>()
         .currentState!

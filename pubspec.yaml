@@ -14,27 +14,23 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
-  # Flutter Dependencies
-  cupertino_icons: ^1.0.6
-  flutter:
-    sdk: flutter
-  get: ^4.6.6
-  provider: ^6.1.2
-
-  # Firebase Dependencies
+  clipboard: ^0.1.3
   cloud_firestore: ^4.17.1
+  country_code_picker: ^3.0.0
+  cupertino_icons: ^1.0.6
+  email_validator: ^2.1.17
   firebase_auth: ^4.19.3
   firebase_core: ^2.30.1
-
-  # Other Dependencies
-  country_code_picker: ^3.0.0
-  email_validator: ^2.1.17
   fluentui_system_icons: ^1.1.241
+  flutter:
+    sdk: flutter
   font_awesome_flutter: ^10.7.0
+  get: ^4.6.6
   google_fonts: ^6.2.1
   google_sign_in: ^6.2.1
   iconsax: ^0.0.8
-
+  provider: ^6.1.2
+  url_launcher: ^6.3.0
 
 dev_dependencies:
   flutter_lints: ^4.0.0

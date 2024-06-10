@@ -10,6 +10,9 @@ import 'package:psip_app/screen/auth_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:psip_app/screen/forgot_sreen.dart';
 import 'package:psip_app/screen/menu/profile%20menu/change_password.dart';
+import 'package:psip_app/screen/menu/profile%20menu/delete_user.dart';
+import 'package:psip_app/screen/menu/profile%20menu/edit_profile.dart';
+import 'package:psip_app/screen/menu/profile%20menu/profile_information.dart';
 import 'package:psip_app/screen/verifyemail_screen.dart';
 import 'firebase_options.dart';
 import 'package:get/get.dart';
@@ -48,7 +51,10 @@ class MyApp extends StatelessWidget {
           '/auth-screen': (context) => const AuthScreen(),
           '/forgot-password': (context) => const ForgotPasswordScreen(),
           '/verify': (context) => const VerifyScreen(),
+          '/profile-info': (context) => const ProfileInformation(),
+          '/edit-profile': (context) => const EditProfile(),
           '/change-password': (context) => const ChangePassword(),
+          '/delete-user': (context) => const DeleteUser(),
         },
       ),
     );
@@ -118,9 +124,10 @@ class GoogleSignInProvider extends ChangeNotifier {
             {
               'uid': user.uid,
               'email': user.email,
-              'address': null,
+              'address': '',
               'displayName': user.displayName,
-              'phoneNumber': user.phoneNumber,
+              'gender': '',
+              'phoneNumber': '',
               'photoURL': user.photoURL,
               'role': 'User',
             },

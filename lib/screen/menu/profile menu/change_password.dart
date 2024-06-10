@@ -133,6 +133,15 @@ class _ChangePasswordState extends State<ChangePassword> {
                   obscureText: isVisible,
                   keyboardType: TextInputType.visiblePassword,
                   textInputAction: TextInputAction.go,
+                  validator: (value) {
+                    if (value!.isEmpty) {
+                      return ("Masukkan kata sandi Anda");
+                    }
+                    return null;
+                  },
+                  onSaved: (value) {
+                    passwordController.text = value!;
+                  },
                   decoration: InputDecoration(
                     floatingLabelBehavior: FloatingLabelBehavior.never,
                     labelText: 'Kata sandi saat ini',
@@ -146,8 +155,9 @@ class _ChangePasswordState extends State<ChangePassword> {
                       icon: Icon(
                           isVisible ? Icons.visibility_off : Icons.visibility),
                     ),
-                    border: const OutlineInputBorder(),
-                    filled: true,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                   ),
                 ),
                 Container(
@@ -183,7 +193,7 @@ class _ChangePasswordState extends State<ChangePassword> {
                       return ("Masukkan kata sandi baru Anda");
                     }
                     if (!regex.hasMatch(value)) {
-                      return ("Kata sandi harus paling tidak 8 karakter dan sulit ditebak orang lain.");
+                      return ("Kata sandi harus paling tidak 8 karakter dan sulit ditebak orang lain");
                     }
                     return null;
                   },
@@ -206,8 +216,9 @@ class _ChangePasswordState extends State<ChangePassword> {
                       icon: Icon(
                           isVisible2 ? Icons.visibility_off : Icons.visibility),
                     ),
-                    border: const OutlineInputBorder(),
-                    filled: true,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                   ),
                 ),
                 const SizedBox(
@@ -245,8 +256,9 @@ class _ChangePasswordState extends State<ChangePassword> {
                       icon: Icon(
                           isVisible3 ? Icons.visibility_off : Icons.visibility),
                     ),
-                    border: const OutlineInputBorder(),
-                    filled: true,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                   ),
                 ),
                 const SizedBox(
@@ -273,7 +285,7 @@ class _ChangePasswordState extends State<ChangePassword> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                )
+                ),
               ],
             ),
           ),
