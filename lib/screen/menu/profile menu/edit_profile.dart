@@ -130,7 +130,9 @@ class _EditProfileState extends State<EditProfile> {
                       child: TextFormField(
                         initialValue: name.toUpperCase(),
                         onChanged: (value) => name = value.toUpperCase(),
-                        inputFormatters: [UpperCaseTextFormatter()],
+                        inputFormatters: [
+                          UpperCaseTextFormatter(),
+                        ],
                         textCapitalization: TextCapitalization.characters,
                         decoration: InputDecoration(
                           isDense: false,

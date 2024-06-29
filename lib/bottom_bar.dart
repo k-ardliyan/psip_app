@@ -45,7 +45,7 @@ class BottomNavBar extends StatelessWidget {
                     icon: Icon(
                       color: controller.selectedIndex == 0
                           ? const Color.fromRGBO(196, 13, 15, 1)
-                          : Colors.black,
+                          : Colors.grey.shade700,
                       controller.selectedIndex == 0
                           ? FluentIcons.home_12_filled
                           : FluentIcons.home_12_regular,
@@ -64,7 +64,7 @@ class BottomNavBar extends StatelessWidget {
                     icon: Icon(
                         color: controller.selectedIndex == 2
                             ? const Color.fromRGBO(196, 13, 15, 1)
-                            : Colors.black,
+                            : Colors.grey.shade700,
                         controller.selectedIndex == 2
                             ? Icons.leaderboard_rounded
                             : Icons.leaderboard_outlined),

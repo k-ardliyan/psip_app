@@ -14,6 +14,7 @@ import 'package:psip_app/screen/menu/profile%20menu/delete_user.dart';
 import 'package:psip_app/screen/menu/profile%20menu/edit_profile.dart';
 import 'package:psip_app/screen/menu/profile%20menu/profile_information.dart';
 import 'package:psip_app/screen/verifyemail_screen.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'firebase_options.dart';
 import 'package:get/get.dart';
 
@@ -43,6 +44,14 @@ class MyApp extends StatelessWidget {
           textTheme: GoogleFonts.interTextTheme(),
           visualDensity: VisualDensity.adaptivePlatformDensity,
         ),
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: const [
+          Locale('id', 'ID'),
+        ],
         debugShowCheckedModeBanner: false,
         initialRoute: '/',
         routes: {

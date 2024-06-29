@@ -49,7 +49,9 @@ class _ProfileInformationState extends State<ProfileInformation> {
           if (snapshot.hasError) {
             return Text('Error: ${snapshot.error}');
           } else if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
           }
           return Scaffold(
             backgroundColor: Colors.white,
