@@ -23,6 +23,9 @@ class _PersonalInformationState extends State<PersonalInformation> {
   final email = TextEditingController();
   final phoneNumber = TextEditingController();
   final address = TextEditingController();
+  final countDownPayment = DateTime.now().add(
+    const Duration(minutes: 10),
+  );
   bool isSelected = false;
 
   @override
@@ -74,22 +77,26 @@ class _PersonalInformationState extends State<PersonalInformation> {
     final isValid = formKey.currentState!.validate();
     if (!isValid) return;
 
+    final timestamp = Timestamp.fromDate(countDownPayment);
+
     try {
       await FirebaseFirestore.instance
           .collection('tickets')
           .doc(widget.code)
           .update({
+        'paymentStatus': 'menunggu',
+        'countdownPayment': timestamp,
         'orderEmail': e,
         'orderName': n,
         'orderPhone': pn,
         'orderAddress': a,
       }).whenComplete(() {
-        Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(
-              builder: (context) => OrderDetails(code: widget.code),
-            ),
-            (Route<dynamic> route) => route.isFirst);
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => OrderDetails(code: widget.code),
+          ),
+        );
       });
     } on FirebaseAuthException catch (e) {
       if (kDebugMode) {
@@ -121,9 +128,10 @@ class _PersonalInformationState extends State<PersonalInformation> {
                             TextSpan(
                               text: "Informasi pengguna",
                               style: GoogleFonts.poppins(
-                                textStyle: const TextStyle(
+                                textStyle: TextStyle(
                                   color: Colors.black,
-                                  fontSize: 25,
+                                  fontSize:
+                                      MediaQuery.of(context).size.width / 16.5,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),

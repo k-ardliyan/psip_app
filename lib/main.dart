@@ -9,6 +9,7 @@ import 'package:psip_app/model/utils.dart';
 import 'package:psip_app/screen/auth_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:psip_app/screen/forgot_sreen.dart';
+import 'package:psip_app/screen/menu/home%20menu/ticket_cart.dart';
 import 'package:psip_app/screen/menu/profile%20menu/change_password.dart';
 import 'package:psip_app/screen/menu/profile%20menu/delete_user.dart';
 import 'package:psip_app/screen/menu/profile%20menu/edit_profile.dart';
@@ -64,6 +65,7 @@ class MyApp extends StatelessWidget {
           '/edit-profile': (context) => const EditProfile(),
           '/change-password': (context) => const ChangePassword(),
           '/delete-user': (context) => const DeleteUser(),
+          '/ticket-cart': (context) => const TicketCart(),
         },
       ),
     );
@@ -156,7 +158,7 @@ class GoogleSignInProvider extends ChangeNotifier {
   }
 
   Future logout() async {
-    await googleSignIn.signOut();
+    await googleSignIn.disconnect();
     FirebaseAuth.instance.signOut();
   }
 }

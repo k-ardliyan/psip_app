@@ -1,4 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:psip_app/screen/menu/home_screen.dart';
@@ -6,8 +8,68 @@ import 'package:psip_app/screen/menu/profile_screen.dart';
 import 'package:psip_app/screen/menu/standing_screen.dart';
 import 'package:psip_app/screen/menu/ticket_screen.dart';
 
-class BottomNavBar extends StatelessWidget {
+class BottomNavBar extends StatefulWidget {
   const BottomNavBar({super.key});
+
+  @override
+  State<BottomNavBar> createState() => _BottomNavBarState();
+}
+
+class _BottomNavBarState extends State<BottomNavBar> {
+  int quota = 0;
+  int quantity = 0;
+
+  Future<void> _deleteOldData() async {
+    final now = Timestamp.now();
+    final collection = FirebaseFirestore.instance.collection('tickets');
+
+    try {
+      final querySnapshot = await collection
+          .where('paymentStatus', isEqualTo: 'menunggu')
+          .where('countdownPayment', isLessThanOrEqualTo: now)
+          .get();
+      for (var doc in querySnapshot.docs) {
+        quantity = doc['quantity'];
+        await FirebaseFirestore.instance
+            .collection('match')
+            .doc(doc['teamMatch'])
+            .collection('tribun')
+            .doc(doc['tribun'])
+            .get()
+            .then((onValue) async {
+          quota = onValue.data()!['quota'];
+          setState(() {
+            quota = quota + quantity;
+          });
+          if (onValue.data()!['ticketStatus'] == 'keranjang') {
+            collection.doc(doc.id).delete();
+          } else {
+            await FirebaseFirestore.instance
+                .collection('match')
+                .doc(doc['teamMatch'])
+                .collection('tribun')
+                .doc(doc['tribun'])
+                .update({'quota': quota}).whenComplete(() {
+              collection.doc(doc.id).delete();
+            });
+          }
+        });
+      }
+      if (kDebugMode) {
+        print('Old documents deleted successfully.');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error deleting old documents: $e');
+      }
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _deleteOldData();
+  }
 
   @override
   Widget build(BuildContext context) {

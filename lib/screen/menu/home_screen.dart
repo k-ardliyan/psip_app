@@ -1,7 +1,11 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:psip_app/model/user_model.dart';
@@ -17,9 +21,59 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   UserModel user = UserModel();
 
+  int quota = 0;
+  int quantity = 0;
+
+  Future<void> _deleteOldData() async {
+    final now = Timestamp.now();
+    final collection = FirebaseFirestore.instance.collection('tickets');
+
+    try {
+      final querySnapshot = await collection
+          .where('paymentStatus', isEqualTo: 'menunggu')
+          .where('countdownPayment', isLessThanOrEqualTo: now)
+          .get();
+      for (var doc in querySnapshot.docs) {
+        quantity = doc['quantity'];
+        await FirebaseFirestore.instance
+            .collection('match')
+            .doc(doc['teamMatch'])
+            .collection('tribun')
+            .doc(doc['tribun'])
+            .get()
+            .then((onValue) async {
+          quota = onValue.data()!['quota'];
+          setState(() {
+            quota = quota + quantity;
+          });
+          if (onValue.data()!['ticketStatus'] == 'keranjang') {
+            collection.doc(doc.id).delete();
+          } else {
+            await FirebaseFirestore.instance
+                .collection('match')
+                .doc(doc['teamMatch'])
+                .collection('tribun')
+                .doc(doc['tribun'])
+                .update({'quota': quota}).whenComplete(() {
+              collection.doc(doc.id).delete();
+            });
+          }
+        });
+      }
+      if (kDebugMode) {
+        print('Old documents deleted successfully.');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error deleting old documents: $e');
+      }
+    }
+  }
+
   @override
   void initState() {
     super.initState();
+    _deleteOldData;
     FirebaseFirestore.instance
         .collection('users')
         .doc(FirebaseAuth.instance.currentUser!.uid)
@@ -80,7 +134,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 padding: const EdgeInsets.only(right: 20),
                 child: IconButton(
                   iconSize: 30,
-                  onPressed: () {},
+                  onPressed: () {
+                    _deleteOldData;
+                    Get.toNamed('/ticket-cart');
+                  },
                   icon: const Icon(
                     FluentIcons.cart_24_filled,
                     color: Color.fromRGBO(196, 13, 15, 1),
@@ -89,305 +146,368 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ],
           ),
-          body: Column(
-            children: [
-              Container(
-                alignment: Alignment.centerLeft,
-                margin: const EdgeInsets.only(top: 10),
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: RichText(
-                  text: TextSpan(
-                    children: [
-                      TextSpan(
-                        text: 'Jadwal',
-                        style: GoogleFonts.poppins(
-                          textStyle: const TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 20,
-                            color: Colors.black,
+          body: SingleChildScrollView(
+            child: Column(
+              children: [
+                Container(
+                  alignment: Alignment.centerLeft,
+                  margin: const EdgeInsets.only(top: 10),
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: RichText(
+                    text: TextSpan(
+                      children: [
+                        TextSpan(
+                          text: 'Jadwal',
+                          style: GoogleFonts.poppins(
+                            textStyle: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: MediaQuery.of(context).size.width / 20,
+                              color: Colors.black,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              StreamBuilder(
-                stream: FirebaseFirestore.instance
-                    .collection('match')
-                    .where(
-                      'dateTime',
-                      isGreaterThan: DateFormat('yyyy-MM-dd HH:mm').format(
-                        DateTime.now().add(
-                          const Duration(hours: 12),
+                StreamBuilder(
+                  stream: FirebaseFirestore.instance
+                      .collection('match')
+                      .where(
+                        'dateTime',
+                        isGreaterThan: DateFormat('yyyy-MM-dd HH:mm').format(
+                          DateTime.now().add(
+                            const Duration(hours: 12),
+                          ),
                         ),
-                      ),
-                    )
-                    .snapshots(),
-                builder: (context, snapshot) {
-                  if (snapshot.hasData) {
-                    return snapshot.data!.docs.isEmpty
-                        ? SizedBox(
-                            height: MediaQuery.of(context).size.height / 10,
-                            child: const Center(
-                              child: Text('Belum ada jadwal pertandingan'),
-                            ),
-                          )
-                        : Expanded(
-                            child: ListView.builder(
-                              itemCount: snapshot.data!.docs.length,
-                              itemBuilder: (context, index) {
-                                if (snapshot.hasData) {
-                                  return Container(
-                                    margin: const EdgeInsets.only(
-                                      left: 20,
-                                      right: 20,
-                                      bottom: 10,
-                                    ),
-                                    height: 160,
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(10),
-                                      color: Colors.white,
-                                      border: Border.all(
-                                        color: Colors.grey.shade300,
+                      )
+                      .snapshots(),
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      return snapshot.data!.docs.isEmpty
+                          ? SizedBox(
+                              height: MediaQuery.of(context).size.height / 10,
+                              child: const Center(
+                                child: Text('Belum ada jadwal pertandingan'),
+                              ),
+                            )
+                          : ConstrainedBox(
+                              constraints: const BoxConstraints.tightFor(),
+                              child: ListView.builder(
+                                itemCount: snapshot.data!.docs.length,
+                                physics: const NeverScrollableScrollPhysics(),
+                                shrinkWrap: true,
+                                itemBuilder: (context, index) {
+                                  if (snapshot.hasData) {
+                                    return Container(
+                                      margin: const EdgeInsets.only(
+                                        left: 20,
+                                        right: 20,
+                                        bottom: 10,
                                       ),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.grey.withOpacity(
-                                              1), // Adjust shadow color and opacity
-                                          blurRadius: 1,
-                                          spreadRadius: -0.5,
-                                          offset: const Offset(0,
-                                              1.5), // Adjust the position of the shadow
+                                      height: 160,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(10),
+                                        color: Colors.white,
+                                        border: Border.all(
+                                          color: Colors.grey.shade300,
                                         ),
-                                      ],
-                                    ),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        SizedBox(
-                                          width: MediaQuery.of(context)
-                                                  .size
-                                                  .width /
-                                              4,
-                                          child: StreamBuilder(
-                                            stream: FirebaseFirestore.instance
-                                                .collection('logo')
-                                                .doc(snapshot.data!.docs[index]
-                                                    ['home'])
-                                                .snapshots(),
-                                            builder: (context, snapshot) {
-                                              if (snapshot.hasData) {
-                                                return Column(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.center,
-                                                  children: [
-                                                    Image.network(
-                                                      snapshot.data!['logoUrl'],
-                                                      height:
-                                                          MediaQuery.of(context)
-                                                                  .size
-                                                                  .width /
-                                                              4.5,
-                                                    ),
-                                                    const SizedBox(
-                                                      height: 10,
-                                                    ),
-                                                    Text(
-                                                      '${snapshot.data!['nameTeam']}\n${snapshot.data!['homeTown']}',
-                                                      textAlign:
-                                                          TextAlign.center,
-                                                      style: const TextStyle(
-                                                        height: 0.9,
-                                                        fontWeight:
-                                                            FontWeight.w600,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                );
-                                              }
-                                              return const Center(
-                                                child:
-                                                    CircularProgressIndicator(),
-                                              );
-                                            },
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.grey.withOpacity(
+                                                1), // Adjust shadow color and opacity
+                                            blurRadius: 1,
+                                            spreadRadius: -0.5,
+                                            offset: const Offset(0,
+                                                1.5), // Adjust the position of the shadow
                                           ),
-                                        ),
-                                        Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            Text(
-                                              snapshot.data!.docs[index]
-                                                  ['event'],
-                                              style: const TextStyle(
-                                                color: Color.fromRGBO(
-                                                    196, 13, 15, 1),
-                                                fontWeight: FontWeight.w600,
-                                              ),
-                                            ),
-                                            Text(
-                                              DateFormat('EEEE, dd MMMM yyyy',
-                                                      'id')
-                                                  .format(
-                                                DateFormat('yyyy-MM-dd HH.mm',
-                                                        'id')
-                                                    .parse(
-                                                  snapshot.data!.docs[index]
-                                                      ['dateTime'],
-                                                ),
-                                              ),
-                                              style: const TextStyle(
-                                                fontWeight: FontWeight.w800,
-                                              ),
-                                            ),
-                                            const SizedBox(
-                                              height: 5,
-                                            ),
-                                            const Text(
-                                              'KICK OFF',
-                                              style: TextStyle(
-                                                color: Color.fromRGBO(
-                                                    196, 13, 15, 1),
-                                                fontWeight: FontWeight.w600,
-                                              ),
-                                            ),
-                                            Text(
-                                              DateFormat('HH:mm WIB', 'id')
-                                                  .format(
-                                                DateFormat('yyyy-MM-dd HH.mm',
-                                                        'id')
-                                                    .parse(
-                                                  snapshot.data!.docs[index]
-                                                      ['dateTime'],
-                                                ),
-                                              ),
-                                              style: const TextStyle(
-                                                fontWeight: FontWeight.w800,
-                                              ),
-                                            ),
-                                            const SizedBox(
-                                              height: 5,
-                                            ),
-                                            ElevatedButton(
-                                              onPressed: snapshot
-                                                              .data!.docs[index]
-                                                          ['open'] ==
-                                                      false
-                                                  ? null
-                                                  : () {
-                                                      Navigator.push(
-                                                        context,
-                                                        MaterialPageRoute(
-                                                          builder: (context) {
-                                                            return SelectTribun(
-                                                              data: snapshot
-                                                                  .data!
-                                                                  .docs[index],
-                                                            );
-                                                          },
+                                        ],
+                                      ),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          SizedBox(
+                                            width: MediaQuery.of(context)
+                                                    .size
+                                                    .width /
+                                                4,
+                                            child: StreamBuilder(
+                                              stream: FirebaseFirestore.instance
+                                                  .collection('logo')
+                                                  .doc(snapshot.data!
+                                                      .docs[index]['home'])
+                                                  .snapshots(),
+                                              builder: (context, snapshot) {
+                                                if (snapshot.hasData) {
+                                                  return Column(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .center,
+                                                    children: [
+                                                      Image.network(
+                                                        snapshot
+                                                            .data!['logoUrl'],
+                                                        height: MediaQuery.of(
+                                                                    context)
+                                                                .size
+                                                                .width /
+                                                            4.5,
+                                                      ),
+                                                      const SizedBox(
+                                                        height: 10,
+                                                      ),
+                                                      Text(
+                                                        '${snapshot.data!['nameTeam']}\n${snapshot.data!['homeTown']}',
+                                                        textAlign:
+                                                            TextAlign.center,
+                                                        style: const TextStyle(
+                                                          height: 0.9,
+                                                          fontWeight:
+                                                              FontWeight.w600,
                                                         ),
-                                                      );
-                                                    },
-                                              style: ElevatedButton.styleFrom(
-                                                shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(10),
-                                                ),
-                                                disabledBackgroundColor:
-                                                    const Color.fromRGBO(
-                                                        196, 13, 15, 0.5),
-                                                backgroundColor:
-                                                    const Color.fromRGBO(
-                                                        196, 13, 15, 1),
-                                                fixedSize: Size(
-                                                  MediaQuery.of(context)
-                                                          .size
-                                                          .width /
-                                                      3,
-                                                  40,
-                                                ),
-                                              ),
-                                              child: Text(
+                                                      ),
+                                                    ],
+                                                  );
+                                                }
+                                                return const Center(
+                                                  child:
+                                                      CircularProgressIndicator(),
+                                                );
+                                              },
+                                            ),
+                                          ),
+                                          Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Text(
                                                 snapshot.data!.docs[index]
-                                                            ['open'] ==
-                                                        false
-                                                    ? 'SEGERA'
-                                                    : 'BELI TIKET',
+                                                    ['event'],
                                                 style: const TextStyle(
-                                                  color: Colors.white,
+                                                  color: Color.fromRGBO(
+                                                      196, 13, 15, 1),
                                                   fontWeight: FontWeight.w600,
                                                 ),
                                               ),
-                                            ),
-                                          ],
-                                        ),
-                                        SizedBox(
-                                          width: MediaQuery.of(context)
-                                                  .size
-                                                  .width /
-                                              4,
-                                          child: StreamBuilder(
-                                            stream: FirebaseFirestore.instance
-                                                .collection('logo')
-                                                .doc(snapshot.data!.docs[index]
-                                                    ['away'])
-                                                .snapshots(),
-                                            builder: (context, snapshot) {
-                                              if (snapshot.hasData) {
-                                                return Column(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.center,
-                                                  children: [
-                                                    Image.network(
-                                                      snapshot.data!['logoUrl'],
-                                                      height:
-                                                          MediaQuery.of(context)
-                                                                  .size
-                                                                  .width /
-                                                              4.5,
-                                                    ),
-                                                    const SizedBox(
-                                                      height: 10,
-                                                    ),
-                                                    Text(
-                                                      '${snapshot.data!['nameTeam']}\n${snapshot.data!['homeTown']}',
-                                                      textAlign:
-                                                          TextAlign.center,
-                                                      style: const TextStyle(
-                                                        height: 0.9,
-                                                        fontWeight:
-                                                            FontWeight.w600,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                );
-                                              }
-                                              return const Center(
-                                                child:
-                                                    CircularProgressIndicator(),
-                                              );
-                                            },
+                                              Text(
+                                                DateFormat('EEEE, dd MMMM yyyy',
+                                                        'id')
+                                                    .format(
+                                                  DateFormat('yyyy-MM-dd HH.mm',
+                                                          'id')
+                                                      .parse(
+                                                    snapshot.data!.docs[index]
+                                                        ['dateTime'],
+                                                  ),
+                                                ),
+                                                style: const TextStyle(
+                                                  fontWeight: FontWeight.w800,
+                                                ),
+                                              ),
+                                              const SizedBox(
+                                                height: 5,
+                                              ),
+                                              const Text(
+                                                'KICK OFF',
+                                                style: TextStyle(
+                                                  color: Color.fromRGBO(
+                                                      196, 13, 15, 1),
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                              Text(
+                                                DateFormat('HH:mm WIB', 'id')
+                                                    .format(
+                                                  DateFormat('yyyy-MM-dd HH.mm',
+                                                          'id')
+                                                      .parse(
+                                                    snapshot.data!.docs[index]
+                                                        ['dateTime'],
+                                                  ),
+                                                ),
+                                                style: const TextStyle(
+                                                  fontWeight: FontWeight.w800,
+                                                ),
+                                              ),
+                                              const SizedBox(
+                                                height: 5,
+                                              ),
+                                              ElevatedButton(
+                                                onPressed:
+                                                    snapshot.data!.docs[index]
+                                                                ['open'] ==
+                                                            false
+                                                        ? null
+                                                        : () async {
+                                                            int total = 0;
+                                                            await FirebaseFirestore
+                                                                .instance
+                                                                .collection(
+                                                                    'tickets')
+                                                                .where('uid',
+                                                                    isEqualTo: FirebaseAuth
+                                                                        .instance
+                                                                        .currentUser
+                                                                        ?.uid)
+                                                                .where(
+                                                                    'teamMatch',
+                                                                    isEqualTo: snapshot
+                                                                        .data!
+                                                                        .docs[
+                                                                            index]
+                                                                        .id)
+                                                                .where(
+                                                                    'matchTime',
+                                                                    isEqualTo: snapshot
+                                                                            .data!
+                                                                            .docs[index]
+                                                                        [
+                                                                        'dateTime'])
+                                                                .get()
+                                                                .then(
+                                                                    (onValue) {
+                                                              for (var doc
+                                                                  in onValue
+                                                                      .docs) {
+                                                                total += doc[
+                                                                        'quantity']
+                                                                    as int; // Assuming the field holds numeric values
+                                                              }
+                                                              if (kDebugMode) {
+                                                                print(total);
+                                                              }
+                                                              return total;
+                                                            }).whenComplete(() {
+                                                              _deleteOldData;
+                                                              if (total == 3) {
+                                                                ScaffoldMessenger.of(
+                                                                        context)
+                                                                    .showSnackBar(
+                                                                  const SnackBar(
+                                                                    content: Text(
+                                                                        'Maksimal 3 tiket tiap pertandingan'),
+                                                                  ),
+                                                                );
+                                                              } else {
+                                                                Navigator.push(
+                                                                  context,
+                                                                  MaterialPageRoute(
+                                                                    builder:
+                                                                        (context) {
+                                                                      return SelectTribun(
+                                                                        data: snapshot
+                                                                            .data!
+                                                                            .docs[index],
+                                                                      );
+                                                                    },
+                                                                  ),
+                                                                );
+                                                              }
+                                                            });
+                                                          },
+                                                style: ElevatedButton.styleFrom(
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            10),
+                                                  ),
+                                                  disabledBackgroundColor:
+                                                      const Color.fromRGBO(
+                                                          196, 13, 15, 0.5),
+                                                  backgroundColor:
+                                                      const Color.fromRGBO(
+                                                          196, 13, 15, 1),
+                                                  fixedSize: Size(
+                                                    MediaQuery.of(context)
+                                                            .size
+                                                            .width /
+                                                        3,
+                                                    40,
+                                                  ),
+                                                ),
+                                                child: Text(
+                                                  snapshot.data!.docs[index]
+                                                              ['open'] ==
+                                                          false
+                                                      ? 'SEGERA'
+                                                      : 'BELI TIKET',
+                                                  style: const TextStyle(
+                                                    color: Colors.white,
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
                                           ),
-                                        ),
-                                      ],
-                                    ),
+                                          SizedBox(
+                                            width: MediaQuery.of(context)
+                                                    .size
+                                                    .width /
+                                                4,
+                                            child: StreamBuilder(
+                                              stream: FirebaseFirestore.instance
+                                                  .collection('logo')
+                                                  .doc(snapshot.data!
+                                                      .docs[index]['away'])
+                                                  .snapshots(),
+                                              builder: (context, snapshot) {
+                                                if (snapshot.hasData) {
+                                                  return Column(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .center,
+                                                    children: [
+                                                      Image.network(
+                                                        snapshot
+                                                            .data!['logoUrl'],
+                                                        height: MediaQuery.of(
+                                                                    context)
+                                                                .size
+                                                                .width /
+                                                            4.5,
+                                                      ),
+                                                      const SizedBox(
+                                                        height: 10,
+                                                      ),
+                                                      Text(
+                                                        '${snapshot.data!['nameTeam']}\n${snapshot.data!['homeTown']}',
+                                                        textAlign:
+                                                            TextAlign.center,
+                                                        style: const TextStyle(
+                                                          height: 0.9,
+                                                          fontWeight:
+                                                              FontWeight.w600,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  );
+                                                }
+                                                return const Center(
+                                                  child:
+                                                      CircularProgressIndicator(),
+                                                );
+                                              },
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  }
+                                  return const Center(
+                                    child: CircularProgressIndicator(),
                                   );
-                                }
-                                return const Center(
-                                  child: CircularProgressIndicator(),
-                                );
-                              },
-                            ),
-                          );
-                  }
-                  return const Center(
-                    child: CircularProgressIndicator(),
-                  );
-                },
-              ),
-            ],
+                                },
+                              ),
+                            );
+                    }
+                    return const Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  },
+                ),
+              ],
+            ),
           ),
         );
       },

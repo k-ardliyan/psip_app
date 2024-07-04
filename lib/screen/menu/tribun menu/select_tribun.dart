@@ -19,17 +19,66 @@ class SelectTribun extends StatefulWidget {
 
 class _SelectTribunState extends State<SelectTribun> {
   int total = 0;
+  int quota = 0;
+  int quantity = 0;
 
-  Future<int> getTotalField(String collectionName, String fieldName) async {
+  Future<void> _deleteOldData() async {
+    final now = Timestamp.now();
+    final collection = FirebaseFirestore.instance.collection('tickets');
+
+    try {
+      final querySnapshot = await collection
+          .where('paymentStatus', isEqualTo: 'menunggu')
+          .where('countdownPayment', isLessThanOrEqualTo: now)
+          .get();
+      for (var doc in querySnapshot.docs) {
+        quantity = doc['quantity'];
+        await FirebaseFirestore.instance
+            .collection('match')
+            .doc(doc['teamMatch'])
+            .collection('tribun')
+            .doc(doc['tribun'])
+            .get()
+            .then((onValue) async {
+          quota = onValue.data()!['quota'];
+          setState(() {
+            quota = quota + quantity;
+          });
+          if (onValue.data()!['ticketStatus'] == 'keranjang') {
+            collection.doc(doc.id).delete();
+          } else {
+            await FirebaseFirestore.instance
+                .collection('match')
+                .doc(doc['teamMatch'])
+                .collection('tribun')
+                .doc(doc['tribun'])
+                .update({'quota': quota}).whenComplete(() {
+              collection.doc(doc.id).delete();
+            });
+          }
+        });
+      }
+      if (kDebugMode) {
+        print('Old documents deleted successfully.');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error deleting old documents: $e');
+      }
+    }
+  }
+
+  Future<int> getTotalField() async {
     final collectionRef = FirebaseFirestore.instance
-        .collection(collectionName)
+        .collection('tickets')
         .where('uid', isEqualTo: FirebaseAuth.instance.currentUser?.uid)
         .where('teamMatch', isEqualTo: widget.data.id)
         .where('matchTime', isEqualTo: widget.data['dateTime']);
     final snapshot = await collectionRef.get();
 
     for (var doc in snapshot.docs) {
-      total += doc[fieldName] as int; // Assuming the field holds numeric values
+      total +=
+          doc['quantity'] as int; // Assuming the field holds numeric values
     }
 
     if (kDebugMode) {
@@ -41,7 +90,8 @@ class _SelectTribunState extends State<SelectTribun> {
   @override
   void initState() {
     super.initState();
-    getTotalField('tickets', 'quantity').then((context) {
+    _deleteOldData();
+    getTotalField().then((context) {
       setState(() {});
     });
   }
@@ -68,7 +118,6 @@ class _SelectTribunState extends State<SelectTribun> {
           builder: (context, snapshot) {
             if (snapshot.hasData) {
               return SingleChildScrollView(
-                physics: const NeverScrollableScrollPhysics(),
                 child: Column(
                   children: [
                     Container(
@@ -82,9 +131,10 @@ class _SelectTribunState extends State<SelectTribun> {
                                   ? "Pengumuman!!\n"
                                   : "Pilih tribun\n",
                               style: GoogleFonts.poppins(
-                                textStyle: const TextStyle(
+                                textStyle: TextStyle(
                                   color: Colors.black,
-                                  fontSize: 25,
+                                  fontSize:
+                                      MediaQuery.of(context).size.width / 16.5,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
@@ -93,9 +143,10 @@ class _SelectTribunState extends State<SelectTribun> {
                               text: total == 3
                                   ? 'Mohon maaf Anda telah mencapai batas maksimal pemesanan tiket, terima kasih atas kesetiaan dan kepercayaan anda terhadap layanan kami.'
                                   : 'Silahkan pilih tribun sesuai keinginan Anda dan sesuai ketersediaan tiket, setiap pengguna dapat memesan tiket dengan jumlah maksimal 3 tiket tiap pertandingan.',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 color: Colors.black,
-                                fontSize: 16,
+                                fontSize:
+                                    MediaQuery.of(context).size.width / 26,
                               ),
                             ),
                           ],
@@ -111,6 +162,7 @@ class _SelectTribunState extends State<SelectTribun> {
                         margin: const EdgeInsets.only(
                           left: 20,
                           right: 20,
+                          bottom: 10,
                         ),
                         height: 160,
                         decoration: BoxDecoration(
@@ -250,176 +302,169 @@ class _SelectTribunState extends State<SelectTribun> {
                           ],
                         ),
                       ),
-                      SizedBox(
-                        height: MediaQuery.of(context).size.height / 1.35,
-                        child: ListView.builder(
-                          physics: const NeverScrollableScrollPhysics(),
-                          shrinkWrap: true,
-                          itemCount: snapshot.data!.docs.length,
-                          itemBuilder: (context, index) {
-                            if (snapshot.hasData) {
-                              return GestureDetector(
-                                onTap: snapshot.data!.docs[index]['quota'] <
-                                            1 ||
-                                        total == 3
-                                    ? null
-                                    : () {
-                                        showModalBottomSheet(
-                                            context: context,
-                                            builder: (context) {
-                                              return Quantity(
-                                                data:
-                                                    snapshot.data!.docs[index],
-                                                match: widget.data,
-                                                totalQuantity: total,
-                                              );
-                                            });
-                                      },
-                                child: Container(
-                                  margin: const EdgeInsets.only(
-                                    left: 20,
-                                    right: 20,
-                                    bottom: 10,
-                                  ),
-                                  padding: const EdgeInsets.all(10),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(10),
-                                    border: Border.all(
-                                      color: Colors.black,
-                                    ),
-                                  ),
-                                  child: Column(
-                                    children: [
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Text(
-                                            snapshot.data!.docs[index].id,
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: MediaQuery.of(context)
-                                                      .size
-                                                      .width /
-                                                  22.5,
-                                            ),
-                                          ),
-                                          RichText(
-                                            text: TextSpan(
-                                              children: [
-                                                TextSpan(
-                                                  text: 'Harga\n',
-                                                  style: TextStyle(
-                                                    color: Colors.grey.shade800,
-                                                  ),
-                                                ),
-                                                TextSpan(
-                                                  text:
-                                                      'Rp ${snapshot.data!.docs[index]['price'] == 0 ? snapshot.data!.docs[index]['price'] : double.parse(snapshot.data!.docs[index]['price'].toString()).toStringAsFixed(3)}',
-                                                  style: TextStyle(
-                                                    color: Colors.black,
-                                                    fontWeight: FontWeight.w600,
-                                                    fontSize:
-                                                        MediaQuery.of(context)
-                                                                .size
-                                                                .width /
-                                                            22.5,
-                                                  ),
-                                                ),
-                                                TextSpan(
-                                                  text: ' /tiket',
-                                                  style: TextStyle(
-                                                    color: Colors.grey.shade800,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          ElevatedButton(
-                                            style: ElevatedButton.styleFrom(
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(10),
-                                              ),
-                                              disabledBackgroundColor:
-                                                  const Color.fromRGBO(
-                                                      196, 13, 15, 0.5),
-                                              backgroundColor:
-                                                  const Color.fromRGBO(
-                                                      196, 13, 15, 1),
-                                              fixedSize: Size(
-                                                MediaQuery.of(context)
-                                                        .size
-                                                        .width /
-                                                    4,
-                                                25,
-                                              ),
-                                            ),
-                                            onPressed: snapshot.data!
-                                                                .docs[index]
-                                                            ['quota'] <
-                                                        1 ||
-                                                    total == 3
-                                                ? null
-                                                : () {
-                                                    showModalBottomSheet(
-                                                        context: context,
-                                                        builder: (context) {
-                                                          return Quantity(
-                                                            data: snapshot.data!
-                                                                .docs[index],
-                                                            match: widget.data,
-                                                            totalQuantity:
-                                                                total,
-                                                          );
-                                                        });
-                                                  },
-                                            child: Text(
-                                              snapshot.data!.docs[index]
-                                                          ['quota'] <
-                                                      1
-                                                  ? 'HABIS'
-                                                  : 'BELI',
-                                              style: const TextStyle(
-                                                color: Colors.white,
-                                                fontWeight: FontWeight.w600,
-                                              ),
-                                            ),
-                                          ),
-                                          Text(
-                                            snapshot.data!.docs[index]
-                                                        ['quota'] <
-                                                    20
-                                                ? 'Sisa ${snapshot.data!.docs[index]['quota']} tiket'
-                                                : 'Tersedia',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.w400,
-                                              color: snapshot.data!.docs[index]
-                                                          ['quota'] <
-                                                      20
-                                                  ? Colors.red
-                                                  : Colors.green,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
+                      ListView.builder(
+                        padding: EdgeInsets.zero,
+                        physics: const NeverScrollableScrollPhysics(),
+                        shrinkWrap: true,
+                        itemCount: snapshot.data!.docs.length,
+                        itemBuilder: (context, index) {
+                          if (snapshot.hasData) {
+                            return GestureDetector(
+                              onTap: snapshot.data!.docs[index]['quota'] < 1 ||
+                                      total == 3
+                                  ? null
+                                  : () {
+                                      showModalBottomSheet(
+                                          context: context,
+                                          builder: (context) {
+                                            return Quantity(
+                                              data: snapshot.data!.docs[index],
+                                              match: widget.data,
+                                              totalQuantity: total,
+                                            );
+                                          });
+                                    },
+                              child: Container(
+                                margin: const EdgeInsets.only(
+                                  left: 20,
+                                  right: 20,
+                                  bottom: 10,
+                                ),
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(
+                                    color: Colors.black,
                                   ),
                                 ),
-                              );
-                            }
-                            return const Center(
-                              child: CircularProgressIndicator(),
+                                child: Column(
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          snapshot.data!.docs[index].id,
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: MediaQuery.of(context)
+                                                    .size
+                                                    .width /
+                                                22.5,
+                                          ),
+                                        ),
+                                        RichText(
+                                          text: TextSpan(
+                                            children: [
+                                              TextSpan(
+                                                text: 'Harga\n',
+                                                style: TextStyle(
+                                                  color: Colors.grey.shade800,
+                                                ),
+                                              ),
+                                              TextSpan(
+                                                text:
+                                                    'Rp ${snapshot.data!.docs[index]['price'] == 0 ? snapshot.data!.docs[index]['price'] : double.parse(snapshot.data!.docs[index]['price'].toString()).toStringAsFixed(3)}',
+                                                style: TextStyle(
+                                                  color: Colors.black,
+                                                  fontWeight: FontWeight.w600,
+                                                  fontSize:
+                                                      MediaQuery.of(context)
+                                                              .size
+                                                              .width /
+                                                          22.5,
+                                                ),
+                                              ),
+                                              TextSpan(
+                                                text: ' /tiket',
+                                                style: TextStyle(
+                                                  color: Colors.grey.shade800,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        ElevatedButton(
+                                          style: ElevatedButton.styleFrom(
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                            ),
+                                            disabledBackgroundColor:
+                                                const Color.fromRGBO(
+                                                    196, 13, 15, 0.5),
+                                            backgroundColor:
+                                                const Color.fromRGBO(
+                                                    196, 13, 15, 1),
+                                            fixedSize: Size(
+                                              MediaQuery.of(context)
+                                                      .size
+                                                      .width /
+                                                  4,
+                                              25,
+                                            ),
+                                          ),
+                                          onPressed: snapshot.data!.docs[index]
+                                                          ['quota'] <
+                                                      1 ||
+                                                  total == 3
+                                              ? null
+                                              : () {
+                                                  showModalBottomSheet(
+                                                      context: context,
+                                                      builder: (context) {
+                                                        return Quantity(
+                                                          data: snapshot.data!
+                                                              .docs[index],
+                                                          match: widget.data,
+                                                          totalQuantity: total,
+                                                        );
+                                                      });
+                                                },
+                                          child: Text(
+                                            snapshot.data!.docs[index]
+                                                        ['quota'] <
+                                                    1
+                                                ? 'HABIS'
+                                                : 'BELI',
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ),
+                                        Text(
+                                          snapshot.data!.docs[index]['quota'] <
+                                                  20
+                                              ? 'Sisa ${snapshot.data!.docs[index]['quota']} tiket'
+                                              : 'Tersedia',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.w400,
+                                            color: snapshot.data!.docs[index]
+                                                        ['quota'] <
+                                                    20
+                                                ? Colors.red
+                                                : Colors.green,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
                             );
-                          },
-                        ),
+                          }
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        },
                       ),
                     } else ...{
                       const SizedBox.shrink(),
@@ -479,36 +524,6 @@ class _QuantityState extends State<Quantity> {
     }
   }
 
-  void minQuota() {
-    if (quantity != 0) {
-      setState(() {
-        quota = quota - quantity;
-      });
-      FirebaseFirestore.instance
-          .collection('match')
-          .doc(widget.match.id)
-          .collection('tribun')
-          .doc(widget.data.id)
-          .update({'quota': quota});
-    }
-  }
-
-  void cancelMinQuota() {
-    if (quantity != 0) {
-      setState(() {
-        quota = quota + quantity;
-      });
-      FirebaseFirestore.instance
-          .collection('match')
-          .doc(widget.match.id)
-          .collection('tribun')
-          .doc(widget.data.id)
-          .update({
-        'quota': quota,
-      });
-    }
-  }
-
   String generateTicketCode() {
     final random = Random();
     final prefix = widget.data.id == 'TRIBUN TIMUR'
@@ -540,7 +555,6 @@ class _QuantityState extends State<Quantity> {
         'paymentDate': '',
         'ticketCode': code,
         'ticketStatus': '',
-        'release': false,
         'quantity': quantity,
         'totalPrice': total,
         'uid': FirebaseAuth.instance.currentUser?.uid,
@@ -560,9 +574,7 @@ class _QuantityState extends State<Quantity> {
         'away': widget.match['away'],
         'stadium': widget.match['stadium'],
       },
-    ).then((_) {
-      minQuota();
-    }).whenComplete(() {
+    ).whenComplete(() {
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) {
@@ -572,9 +584,7 @@ class _QuantityState extends State<Quantity> {
                   .collection('tickets')
                   .doc(code)
                   .delete()
-                  .then((_) {
-                cancelMinQuota();
-              }).whenComplete(() {
+                  .whenComplete(() {
                 Get.back();
               });
             },

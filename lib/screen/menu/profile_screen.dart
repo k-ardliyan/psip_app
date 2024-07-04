@@ -5,6 +5,7 @@ import 'dart:ui';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -23,9 +24,55 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   UserModel? user;
 
+  int quota = 0;
+  int quantity = 0;
+
+  Future<void> _deleteOldData() async {
+    final now = Timestamp.now();
+    final collection = FirebaseFirestore.instance.collection('tickets');
+
+    try {
+      final querySnapshot = await collection
+          .where('paymentStatus', isEqualTo: 'menunggu')
+          .where('countdownPayment', isLessThanOrEqualTo: now)
+          .get();
+      for (var doc in querySnapshot.docs) {
+        quantity = doc['quantity'];
+        await FirebaseFirestore.instance
+            .collection('match')
+            .doc(doc['teamMatch'])
+            .collection('tribun')
+            .doc(doc['tribun'])
+            .get()
+            .then((onValue) async {
+          quota = onValue.data()!['quota'];
+          setState(() {
+            quota = quota + quantity;
+          });
+          await FirebaseFirestore.instance
+              .collection('match')
+              .doc(doc['teamMatch'])
+              .collection('tribun')
+              .doc(doc['tribun'])
+              .update({'quota': quota});
+        }).whenComplete(() {
+          collection.doc(doc.id).delete();
+        });
+      }
+      if (kDebugMode) {
+        print('Old documents deleted successfully.');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error deleting old documents: $e');
+      }
+    }
+  }
+
   @override
   void initState() {
     super.initState();
+    _deleteOldData();
     if (FirebaseAuth.instance.currentUser != null) {
       FirebaseFirestore.instance
           .collection('users')
