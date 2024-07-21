@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="psip_app"
+        android:label="NontonBal"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

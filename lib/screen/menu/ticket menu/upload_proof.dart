@@ -70,8 +70,8 @@ class _UploadProofState extends State<UploadProof> {
         ),
       ),
       'proofUrl': imageUrl,
+      'checkIn': false,
       'paymentStatus': 'verifikasi',
-      'ticketStatus': 'verifikasi',
       'paymentDate': DateFormat('yyyy-MM-dd HH:mm', 'id_ID').format(
         DateTime.now().toUtc().add(
               const Duration(hours: 7),

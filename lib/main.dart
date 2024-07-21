@@ -13,7 +13,9 @@ import 'package:psip_app/screen/menu/home%20menu/ticket_cart.dart';
 import 'package:psip_app/screen/menu/profile%20menu/change_password.dart';
 import 'package:psip_app/screen/menu/profile%20menu/delete_user.dart';
 import 'package:psip_app/screen/menu/profile%20menu/edit_profile.dart';
+import 'package:psip_app/screen/menu/profile%20menu/history/history_screen.dart';
 import 'package:psip_app/screen/menu/profile%20menu/profile_information.dart';
+import 'package:psip_app/screen/menu/ticket%20menu/scan_qr.dart';
 import 'package:psip_app/screen/verifyemail_screen.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'firebase_options.dart';
@@ -64,7 +66,9 @@ class MyApp extends StatelessWidget {
           '/profile-info': (context) => const ProfileInformation(),
           '/edit-profile': (context) => const EditProfile(),
           '/change-password': (context) => const ChangePassword(),
+          '/history': (context) => const HistoryScreen(),
           '/delete-user': (context) => const DeleteUser(),
+          '/scan-qr': (context) => const ScanQr(),
           '/ticket-cart': (context) => const TicketCart(),
         },
       ),

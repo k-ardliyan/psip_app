@@ -567,6 +567,7 @@ class _QuantityState extends State<Quantity> {
         'orderName': '',
         'orderEmail': '',
         'orderPhone': '',
+        'orderAddress': '',
         'matchTime': widget.match['dateTime'],
         'event': widget.match['event'],
         'teamMatch': widget.match.id,

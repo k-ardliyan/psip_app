@@ -7,6 +7,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:psip_app/screen/menu/ticket%20menu/ticket.dart';
+import 'package:psip_app/screen/menu/ticket%20menu/ticket_payment2.dart';
 
 class DottedLinePainter extends CustomPainter {
   final Color color;
@@ -216,7 +218,8 @@ class _TicketScreenState extends State<TicketScreen> {
                                 ),
                                 Container(
                                   padding: const EdgeInsets.only(right: 15),
-                                  height: 272,
+                                  height:
+                                      MediaQuery.of(context).size.width / 1.37,
                                   child: ListView.builder(
                                       scrollDirection: Axis.horizontal,
                                       itemCount: snapshot.data!.docs.length,
@@ -243,6 +246,10 @@ class _TicketScreenState extends State<TicketScreen> {
                                             left: 20,
                                             right: 5,
                                           ),
+                                          width: MediaQuery.of(context)
+                                                  .size
+                                                  .width -
+                                              35,
                                           padding: const EdgeInsets.all(10),
                                           decoration: BoxDecoration(
                                             borderRadius:
@@ -263,7 +270,32 @@ class _TicketScreenState extends State<TicketScreen> {
                                             ],
                                           ),
                                           child: InkWell(
-                                            onTap: () {},
+                                            onTap: snapshot.data!.docs[index]
+                                                        ['proofUrl'] ==
+                                                    null
+                                                ? () {
+                                                    Navigator.push(
+                                                      context,
+                                                      MaterialPageRoute(
+                                                          builder: (context) {
+                                                        return TicketPayment2(
+                                                          code: snapshot.data!
+                                                              .docs[index].id
+                                                              .toString(),
+                                                        );
+                                                      }),
+                                                    );
+                                                  }
+                                                : () {
+                                                    ScaffoldMessenger.of(
+                                                            context)
+                                                        .showSnackBar(
+                                                      const SnackBar(
+                                                        content: Text(
+                                                            'Pembayaran dalam proses verifikasi'),
+                                                      ),
+                                                    );
+                                                  },
                                             child: Column(
                                               crossAxisAlignment:
                                                   CrossAxisAlignment.start,
@@ -366,6 +398,7 @@ class _TicketScreenState extends State<TicketScreen> {
                                                   child: Text(
                                                     snapshot.data!.docs[index]
                                                         ['teamMatch'],
+                                                    maxLines: 2,
                                                     style: TextStyle(
                                                       fontWeight:
                                                           FontWeight.w800,
@@ -487,7 +520,6 @@ class _TicketScreenState extends State<TicketScreen> {
                 height: 20,
               ),
               Container(
-                height: MediaQuery.of(context).size.height,
                 width: MediaQuery.of(context).size.width,
                 decoration: const BoxDecoration(
                   color: Colors.white,
@@ -595,6 +627,9 @@ class _TicketScreenState extends State<TicketScreen> {
                                             padding: const EdgeInsets.symmetric(
                                               horizontal: 10,
                                               vertical: 10,
+                                            ),
+                                            margin: const EdgeInsets.only(
+                                              bottom: 10,
                                             ),
                                             decoration: BoxDecoration(
                                               borderRadius:
@@ -986,9 +1021,51 @@ class _TicketScreenState extends State<TicketScreen> {
                                                       40,
                                                     ),
                                                   ),
-                                                  onPressed: () {},
+                                                  onPressed: () {
+                                                    if (DateTime.now().isAfter(
+                                                      DateTime.parse(
+                                                        DateFormat(
+                                                                'yyyy-MM-dd HH:mm')
+                                                            .format(
+                                                          DateFormat(
+                                                                  'yyyy-MM-dd HH.mm')
+                                                              .parse(snapshot
+                                                                          .data!
+                                                                          .docs[
+                                                                      index]
+                                                                  ['matchTime'])
+                                                              .subtract(
+                                                                const Duration(
+                                                                    hours: 2),
+                                                              ),
+                                                        ),
+                                                      ),
+                                                    )) {
+                                                      Navigator.push(
+                                                        context,
+                                                        MaterialPageRoute(
+                                                          builder: (context) {
+                                                            return ETICKET(
+                                                                data: snapshot
+                                                                        .data!
+                                                                        .docs[
+                                                                    index]);
+                                                          },
+                                                        ),
+                                                      );
+                                                    } else {
+                                                      ScaffoldMessenger.of(
+                                                              context)
+                                                          .showSnackBar(
+                                                        const SnackBar(
+                                                          content: Text(
+                                                              'E-ticket dapat dibuka 2 jam sebelum pertandingan'),
+                                                        ),
+                                                      );
+                                                    }
+                                                  },
                                                   child: const Text(
-                                                    'CETAK E-TIKET',
+                                                    'BUKA E-TIKET',
                                                     style: TextStyle(
                                                       color: Colors.white,
                                                       fontWeight:

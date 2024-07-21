@@ -5,11 +5,15 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:psip_app/bottom_bar.dart';
 import 'package:psip_app/model/user_model.dart';
+import 'package:psip_app/screen/menu/ticket%20menu/ticket.dart';
 import 'package:psip_app/screen/menu/tribun%20menu/select_tribun.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -130,6 +134,17 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             actions: [
+              if (snapshot.data!['role'] != 'User')
+                IconButton(
+                  iconSize: 30,
+                  onPressed: () {
+                    Get.toNamed('/scan-qr');
+                  },
+                  icon: const Icon(
+                    FluentIcons.scan_qr_code_24_regular,
+                    color: Color.fromRGBO(196, 13, 15, 1),
+                  ),
+                ),
               Padding(
                 padding: const EdgeInsets.only(right: 20),
                 child: IconButton(
@@ -149,6 +164,271 @@ class _HomeScreenState extends State<HomeScreen> {
           body: SingleChildScrollView(
             child: Column(
               children: [
+                StreamBuilder(
+                    stream: FirebaseFirestore.instance
+                        .collection('tickets')
+                        .where('uid',
+                            isEqualTo: FirebaseAuth.instance.currentUser!.uid)
+                        .where('paymentStatus', isEqualTo: 'lunas')
+                        .where('ticketStatus', isEqualTo: 'aktif')
+                        .snapshots(),
+                    builder: (context, snapshot) {
+                      if (snapshot.hasData) {
+                        return snapshot.data!.docs.isEmpty
+                            ? const SizedBox.shrink()
+                            : Column(
+                                children: [
+                                  Container(
+                                    alignment: Alignment.centerLeft,
+                                    margin: const EdgeInsets.only(top: 10),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 20),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          'Tiket aktif',
+                                          style: GoogleFonts.poppins(
+                                            textStyle: TextStyle(
+                                              fontWeight: FontWeight.w600,
+                                              fontSize: MediaQuery.of(context)
+                                                      .size
+                                                      .width /
+                                                  20,
+                                              color: Colors.black,
+                                            ),
+                                          ),
+                                        ),
+                                        GestureDetector(
+                                          onTap: () {
+                                            Get.put(BottomBarController())
+                                                .changeIndex(1);
+                                          },
+                                          child: Text(
+                                            'Lihat semua',
+                                            style: GoogleFonts.poppins(
+                                              textStyle: TextStyle(
+                                                fontWeight: FontWeight.w600,
+                                                fontSize: MediaQuery.of(context)
+                                                        .size
+                                                        .width /
+                                                    25,
+                                                color: const Color.fromRGBO(
+                                                    196, 13, 15, 1),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Container(
+                                    constraints:
+                                        const BoxConstraints(maxHeight: 75),
+                                    child: ListView.builder(
+                                      scrollDirection: Axis.horizontal,
+                                      shrinkWrap: true,
+                                      itemCount: snapshot.data!.docs.length,
+                                      itemBuilder: (context, index) {
+                                        return Container(
+                                          constraints: BoxConstraints(
+                                            maxWidth: MediaQuery.of(context)
+                                                    .size
+                                                    .width -
+                                                40,
+                                          ),
+                                          margin: const EdgeInsets.symmetric(
+                                              horizontal: 20),
+                                          decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            borderRadius:
+                                                BorderRadius.circular(10),
+                                            border:
+                                                Border.all(color: Colors.grey),
+                                          ),
+                                          child: ListTile(
+                                            onTap: () {
+                                              if (DateTime.now().isAfter(
+                                                DateTime.parse(
+                                                  DateFormat('yyyy-MM-dd HH:mm')
+                                                      .format(
+                                                    DateFormat(
+                                                            'yyyy-MM-dd HH.mm')
+                                                        .parse(snapshot.data!
+                                                                .docs[index]
+                                                            ['matchTime'])
+                                                        .subtract(
+                                                          const Duration(
+                                                              hours: 2),
+                                                        ),
+                                                  ),
+                                                ),
+                                              )) {
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (context) {
+                                                      return ETICKET(
+                                                          data: snapshot.data!
+                                                              .docs[index]);
+                                                    },
+                                                  ),
+                                                );
+                                              } else {
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(
+                                                  const SnackBar(
+                                                    content: Text(
+                                                        'E-ticket dapat dibuka 2 jam sebelum pertandingan'),
+                                                  ),
+                                                );
+                                              }
+                                            },
+                                            title: RichText(
+                                              text: TextSpan(
+                                                children: [
+                                                  TextSpan(
+                                                    text:
+                                                        '${snapshot.data!.docs[index]['orderName']} • ',
+                                                    style: TextStyle(
+                                                      color:
+                                                          Colors.grey.shade800,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                  TextSpan(
+                                                    text: snapshot
+                                                        .data!.docs[index].id,
+                                                    style: const TextStyle(
+                                                      color: Color.fromRGBO(
+                                                          196, 13, 15, 1),
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            subtitle: Text(
+                                              snapshot.data!.docs[index]
+                                                  ['teamMatch'],
+                                            ),
+                                            trailing: const Icon(FluentIcons
+                                                .chevron_right_48_filled),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              );
+                      }
+                      return const Center(
+                        child: CircularProgressIndicator(),
+                      );
+                    }),
+                Container(
+                  alignment: Alignment.centerLeft,
+                  margin: const EdgeInsets.only(top: 10),
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: RichText(
+                    text: TextSpan(
+                      children: [
+                        TextSpan(
+                          text: 'Sosial media',
+                          style: GoogleFonts.poppins(
+                            textStyle: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: MediaQuery.of(context).size.width / 20,
+                              color: Colors.black,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(
+                  height: 20,
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    RawMaterialButton(
+                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      fillColor: Colors.grey.shade900,
+                      padding: const EdgeInsets.all(12),
+                      shape: const CircleBorder(),
+                      onPressed: () async {
+                        if (await canLaunchUrl(
+                          Uri.parse(
+                              'https://www.instagram.com/psipofficial?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=='),
+                        )) {
+                          await launchUrl(
+                            Uri.parse(
+                                'https://www.instagram.com/psipofficial?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=='),
+                          );
+                        } else {
+                          throw 'Could not launch https://www.instagram.com/psipofficial?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==';
+                        }
+                      },
+                      child: const Icon(
+                        FontAwesomeIcons.instagram,
+                        size: 30,
+                        color: Colors.white,
+                      ),
+                    ),
+                    RawMaterialButton(
+                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      fillColor: Colors.grey.shade900,
+                      padding: const EdgeInsets.all(12),
+                      shape: const CircleBorder(),
+                      onPressed: () async {
+                        if (await canLaunchUrl(
+                          Uri.parse('https://x.com/officialpsip'),
+                        )) {
+                          await launchUrl(
+                            Uri.parse('https://x.com/officialpsip'),
+                          );
+                        } else {
+                          throw 'Could not launch https://x.com/officialpsip';
+                        }
+                      },
+                      child: const Icon(
+                        FontAwesomeIcons.xTwitter,
+                        size: 30,
+                        color: Colors.white,
+                      ),
+                    ),
+                    RawMaterialButton(
+                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      fillColor: Colors.grey.shade900,
+                      padding: const EdgeInsets.all(12),
+                      shape: const CircleBorder(),
+                      onPressed: () async {
+                        if (await canLaunchUrl(
+                          Uri.parse('https://www.facebook.com/psippml'),
+                        )) {
+                          await launchUrl(
+                            Uri.parse('https://www.facebook.com/psippml'),
+                          );
+                        } else {
+                          throw 'Could not launch https://www.facebook.com/psippml';
+                        }
+                      },
+                      child: const Icon(
+                        FontAwesomeIcons.facebook,
+                        size: 30,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(
+                  height: 10,
+                ),
                 Container(
                   alignment: Alignment.centerLeft,
                   margin: const EdgeInsets.only(top: 10),
@@ -175,7 +455,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       .collection('match')
                       .where(
                         'dateTime',
-                        isGreaterThan: DateFormat('yyyy-MM-dd HH:mm').format(
+                        isGreaterThan: DateFormat('yyyy-MM-dd HH.mm').format(
                           DateTime.now().add(
                             const Duration(hours: 12),
                           ),
@@ -426,15 +706,18 @@ class _HomeScreenState extends State<HomeScreen> {
                                                     40,
                                                   ),
                                                 ),
-                                                child: Text(
-                                                  snapshot.data!.docs[index]
-                                                              ['open'] ==
-                                                          false
-                                                      ? 'SEGERA'
-                                                      : 'BELI TIKET',
-                                                  style: const TextStyle(
-                                                    color: Colors.white,
-                                                    fontWeight: FontWeight.w600,
+                                                child: FittedBox(
+                                                  child: Text(
+                                                    snapshot.data!.docs[index]
+                                                                ['open'] ==
+                                                            false
+                                                        ? 'SEGERA'
+                                                        : 'BELI TIKET',
+                                                    style: const TextStyle(
+                                                      color: Colors.white,
+                                                      fontWeight:
+                                                          FontWeight.w600,
+                                                    ),
                                                   ),
                                                 ),
                                               ),

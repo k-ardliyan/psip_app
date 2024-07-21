@@ -258,7 +258,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   SizedBox(
                     width: MediaQuery.of(context).size.width - 25,
                     child: ListTile(
-                      onTap: () {},
+                      onTap: () {
+                        Get.toNamed('/history');
+                      },
                       dense: true,
                       horizontalTitleGap: 10,
                       leading: IconButton.filled(
